@@ -388,8 +388,8 @@ void __init dma_contiguous_remap(void)
 		struct map_desc map;
 		unsigned long addr;
 
-		if (end > lowmem_limit)
-			end = lowmem_limit;
+		if (end > arm_lowmem_limit)
+			end = arm_lowmem_limit;
 		if (start >= end)
 			return;
 
@@ -693,6 +693,21 @@ static void *__alloc_simple_buffer(struct device *dev, size_t size, gfp_t gfp,
 static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
 			 gfp_t gfp, pgprot_t prot, const void *caller,
 			 bool no_kernel_mapping)
+{
+	u64 mask = get_coherent_dma_mask(dev);
+	struct page *page;
+	page = __dma_alloc_buffer(dev, size, gfp);
+	if (!page)
+		return NULL;
+
+	*ret_page = page;
+	return page_address(page);
+}
+
+
+
+static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
+			 gfp_t gfp, pgprot_t prot, const void *caller)
 {
 	u64 mask = get_coherent_dma_mask(dev);
 	struct page *page;
