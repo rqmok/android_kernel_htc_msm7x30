@@ -14,7 +14,7 @@ obj-y			:= filemap.o mempool.o oom_kill.o fadvise.o \
 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
 			   page_isolation.o mm_init.o mmu_context.o percpu.o \
 			   iov-iter.o $(mmu-y) \
-			   vmpressure.o
+			   vmpressure.o compaction.o
 obj-y += init-mm.o
 
 ifdef CONFIG_NO_BOOTMEM
@@ -35,7 +35,6 @@ obj-$(CONFIG_SPARSEMEM)	+= sparse.o
 obj-$(CONFIG_SPARSEMEM_VMEMMAP) += sparse-vmemmap.o
 obj-$(CONFIG_ASHMEM) += ashmem.o
 obj-$(CONFIG_SLOB) += slob.o
-obj-$(CONFIG_COMPACTION) += compaction.o
 obj-$(CONFIG_MMU_NOTIFIER) += mmu_notifier.o
 obj-$(CONFIG_KSM) += ksm.o
 obj-$(CONFIG_PAGE_POISONING) += debug-pagealloc.o
