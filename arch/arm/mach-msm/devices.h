@@ -259,3 +259,5 @@ extern struct platform_device msm_funnel_device;
 extern struct platform_device msm_debug_device;
 extern struct platform_device msm_ptm_device;
 #endif
+
+extern struct platform_device msm7x30_device_acpuclk;

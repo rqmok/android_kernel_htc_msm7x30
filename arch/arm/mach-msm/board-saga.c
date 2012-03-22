@@ -5202,7 +5202,7 @@ static void __init saga_init(void)
 
 	msm_clock_init(&msm7x30_clock_init_data);
 	msm_spm_init(&msm_spm_data, 1);
-	acpuclk_init(&acpuclk_7x30_soc_data);
+	platform_device_register(&msm7x30_device_acpuclk);
 
 #ifdef CONFIG_SERIAL_MSM_HS
 #ifdef CONFIG_SERIAL_MSM_HS_PURE_ANDROID
