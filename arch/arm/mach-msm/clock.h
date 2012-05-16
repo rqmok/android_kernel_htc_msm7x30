@@ -32,7 +32,6 @@
 #define CLKFLAG_NONEST			0x00000004
 #define CLKFLAG_NORESET			0x00000008
 #define CLKFLAG_HANDOFF_RATE		0x00000010
-#define CLKFLAG_SKIP_AUTO_OFF		0x00000200
 #define CLKFLAG_MIN			0x00000400
 #define CLKFLAG_MAX			0x00000800
 #define CLKFLAG_IGNORE		0x10000000	/*added by htc for clock debugging*/
@@ -66,7 +65,6 @@ struct clk_vdd_class {
 struct clk_ops {
 	int (*enable)(struct clk *clk);
 	void (*disable)(struct clk *clk);
-	void (*auto_off)(struct clk *clk);
 	int (*handoff)(struct clk *clk);
 	int (*reset)(struct clk *clk, enum clk_reset_action action);
 	int (*set_rate)(struct clk *clk, unsigned long rate);

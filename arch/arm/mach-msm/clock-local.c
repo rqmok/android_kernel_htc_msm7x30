@@ -646,7 +646,6 @@ static int pll_vote_clk_is_enabled(struct clk *clk)
 struct clk_ops clk_ops_pll_vote = {
 	.enable = pll_vote_clk_enable,
 	.disable = pll_vote_clk_disable,
-	.auto_off = pll_vote_clk_disable,
 	.is_enabled = pll_vote_clk_is_enabled,
 	.get_parent = pll_vote_clk_get_parent,
 	.is_local = local_clk_is_local,
@@ -748,7 +747,6 @@ int sr_pll_clk_enable(struct clk *clk)
 struct clk_ops clk_ops_pll = {
 	.enable = pll_clk_enable,
 	.disable = pll_clk_disable,
-	.auto_off = pll_clk_disable,
 	.get_parent = pll_clk_get_parent,
 	.is_local = local_clk_is_local,
 };
@@ -940,7 +938,6 @@ static int cdiv_clk_handoff(struct clk *c)
 struct clk_ops clk_ops_cdiv = {
 	.enable = cdiv_clk_enable,
 	.disable = cdiv_clk_disable,
-	.auto_off = cdiv_clk_disable,
 	.handoff = cdiv_clk_handoff,
 	.set_rate = cdiv_clk_set_rate,
 	.get_rate = cdiv_clk_get_rate,
