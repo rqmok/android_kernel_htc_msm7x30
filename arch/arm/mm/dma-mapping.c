@@ -481,7 +481,7 @@ __dma_alloc_remap(struct page *page, size_t size, gfp_t gfp, pgprot_t prot,
 	return NULL;
 }
 
-static void __dma_free_remap(void *cpu_addr, size_t size)
+static void __dma_free_remap(void *cpu_addr, size_t size, bool no_warn)
 {
 	struct arm_vmregion *c;
 	unsigned long addr;
@@ -491,9 +491,11 @@ static void __dma_free_remap(void *cpu_addr, size_t size)
 
 	c = arm_vmregion_find_remove(&consistent_head, (unsigned long)cpu_addr);
 	if (!c) {
-		pr_err("%s: trying to free invalid coherent area: %p\n",
-		       __func__, cpu_addr);
-		dump_stack();
+		if (!no_warn) {
+			pr_err("%s: trying to free invalid coherent area: %p\n",
+			       __func__, cpu_addr);
+			dump_stack();
+		}
 		return;
 	}
 
@@ -635,6 +637,7 @@ static int __free_from_pool(void *cpu_addr, size_t size)
 	return 1;
 }
 
+#define NO_KERNEL_MAPPING_DUMMY	0x2222
 static void *__alloc_from_contiguous(struct device *dev, size_t size,
 				     pgprot_t prot, struct page **ret_page,
 				     bool no_kernel_mapping,
@@ -655,10 +658,20 @@ static void *__alloc_from_contiguous(struct device *dev, size_t size,
 		__dma_remap(page, size, prot, no_kernel_mapping);
 		ptr = page_address(page);
 	} else {
-		ptr = __dma_alloc_remap(page, size, GFP_KERNEL, prot, caller);
-		if (!ptr) {
-			dma_release_from_contiguous(dev, page, count);
-			return NULL;
+		if (no_kernel_mapping) {
+			/*
+			 * Something non-NULL needs to be returned here. Give
+			 * back a dummy address that is unmapped to catch
+			 * clients trying to use the address incorrectly
+			 */
+			ptr = (void *)NO_KERNEL_MAPPING_DUMMY;
+		} else {
+			ptr = __dma_alloc_remap(page, size, GFP_KERNEL, prot,
+						caller);
+			if (!ptr) {
+				dma_release_from_contiguous(dev, page, count);
+				return NULL;
+			}
 		}
 	}
 	*ret_page = page;
@@ -671,7 +684,7 @@ static void __free_from_contiguous(struct device *dev, struct page *page,
 	if (!PageHighMem(page))
 		__dma_remap(page, size, pgprot_kernel, false);
 	else
-		__dma_free_remap(cpu_addr, size);
+		__dma_free_remap(cpu_addr, size, true);
 	dma_release_from_contiguous(dev, page, size >> PAGE_SHIFT);
 }
 
@@ -846,9 +859,9 @@ void arm_dma_free(struct device *dev, size_t size, void *cpu_addr,
 	if (arch_is_coherent() || nommu()) {
 		__dma_free_buffer(page, size);
 	}
-#if !defined(CONFIG_CMA) 
+#if !defined(CONFIG_CMA)
 	else {
-		__dma_free_remap(cpu_addr, size);
+		__dma_free_remap(cpu_addr, size, false);
 		__dma_free_buffer(page, size);
 	}
 #else
@@ -1385,7 +1398,7 @@ void arm_iommu_free_attrs(struct device *dev, size_t size, void *cpu_addr,
 	c = arm_vmregion_find(&consistent_head, (unsigned long)cpu_addr);
 	if (c) {
 		struct page **pages = c->priv;
-		__dma_free_remap(cpu_addr, size);
+		__dma_free_remap(cpu_addr, size, false);
 		__iommu_remove_mapping(dev, handle, size);
 		__iommu_free_buffer(dev, pages, size);
 	}
