@@ -28,7 +28,7 @@
 #include <mach/msm_iomap.h>
 #include <mach/vreg.h>
 #include <linux/msm_ion.h>
-//#include <mach/panel_id.h>
+#include <mach/panel_id.h>
 
 #include "../board-primou.h"
 #include "../devices.h"
@@ -159,7 +159,7 @@ int __init primou_init_panel(void)
 {
 	int ret;
 
-/*	switch (panel_type) {
+	switch (panel_type) {
 	case PANEL_ID_PRIMO_SONY:
 		printk("%s: Using sony panel.\n", __func__);
 		break;
@@ -169,16 +169,16 @@ int __init primou_init_panel(void)
 	default:
 		printk("%s: Using some other panel.\n", __func__);
 		break;
-	}*/
+	}
 
 	ret = panel_init_power();
 	if (ret)
 		return ret;
 
-	ret = platform_device_register(&mddi_primouwvga_device);
-
 	msm_fb_register_device("mdp", &mdp_pdata);
 	msm_fb_register_device("pmdh", &mddi_pdata);
+
+	ret = platform_device_register(&mddi_primouwvga_device);
 
 	return 0;
 }

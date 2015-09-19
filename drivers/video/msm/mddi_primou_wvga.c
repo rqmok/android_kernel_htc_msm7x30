@@ -35,8 +35,10 @@
 extern int panel_type;
 static DEFINE_MUTEX(panel_lock);
 static atomic_t bl_ready = ATOMIC_INIT(1);
+static uint8_t last_val = 102;
 /* use one flag to have better backlight on/off performance */
 static int primou_set_dim = 1;
+static struct wake_lock panel_idle_lock;
 
 static struct mddi_panel_platform_data *pdata;
 static struct msm_fb_panel_data primouwvga_panel_data;
@@ -650,13 +652,32 @@ static int mddi_primou_panel_off(struct platform_device *pdev)
     return 0;
 }
 
-
-static void mddi_primou_panel_set_backlight(struct msm_fb_data_type *mfd)
+static void primou_adjust_backlight(enum led_brightness val)
 {
-	mutex_lock(&panel_lock);
+	unsigned int shrink_br;
 
 	printk(KERN_DEBUG "%s\n", __func__);
 
+	if (atomic_read(&bl_ready) == 0)
+		return;
+
+    if (val == 0)
+        shrink_br = 0;
+    else if (val < 30)
+        shrink_br = 9;
+    else if ((val >= 30) && (val < 83))
+        shrink_br = 46 * (val - 30) / 53 + 9;
+    else if ((val >= 83) && (val < 142))
+        shrink_br = 54 * (val - 83) / 59 + 55;
+    else
+        shrink_br = 146 * (val - 142) / 113 + 109;
+
+    if (last_val == shrink_br)
+    {
+        printk(KERN_DEBUG "[BL] Skipping identical br. %d\n", shrink_br);
+        return;
+    }
+	mutex_lock(&panel_lock);
     if (primou_set_dim == 1)
     {
         write_client_reg(0x2C, 0x5300);
@@ -664,21 +685,75 @@ static void mddi_primou_panel_set_backlight(struct msm_fb_data_type *mfd)
         primou_set_dim = 0;
     }
 
-    printk(KERN_DEBUG "[BL] Setting bl to %d\n", mfd->bl_level);    
+    printk(KERN_DEBUG "[BL] Setting bl to %d\n", shrink_br);
 
     write_client_reg(0x00, 0x5500);
-    write_client_reg(mfd->bl_level, 0x5100);
+    write_client_reg(shrink_br, 0x5100);
+    last_val = shrink_br;
 
     mutex_unlock(&panel_lock);
 }
 
+static void primou_brightness_set(struct led_classdev *led_cdev,
+		enum led_brightness val)
+{
+	printk(KERN_DEBUG "%s\n", __func__);
+
+	if (atomic_read(&bl_ready) == 0) {
+		printk(KERN_DEBUG "[BL] Not ready, val=%d\n", val);
+		return;
+	}
+
+    primou_adjust_backlight(val);
+    led_cdev->brightness = last_val;
+
+    primou_set_dim = 1;
+}
+
+static struct led_classdev primou_backlight_led = {
+	.name = "lcd-backlight",
+	.brightness = LED_FULL,
+	.brightness_set = primou_brightness_set,
+};
+
+static int primou_backlight_probe(struct platform_device *pdev)
+{
+	int rc;
+
+	rc = led_classdev_register(&pdev->dev, &primou_backlight_led);
+	if (rc)
+		printk(KERN_DEBUG "backlight: failure on register led_classdev\n");
+	return 0;
+}
+
+
+static struct platform_device primou_backlight = {
+    .name = "primou-backlight",
+};
+
+static struct platform_driver primou_backlight_driver = {
+    .probe      = primou_backlight_probe,
+    .driver     = {
+        .name   = "primou-backlight",
+        .owner  = THIS_MODULE,
+    },
+};
 
 static int primouwvga_probe(struct platform_device *pdev)
 {
+	int ret;
+
 	if (pdev->id == 0) {
 		pdata = pdev->dev.platform_data;
 		return 0;
 	}
+
+	wake_lock_init(&panel_idle_lock, WAKE_LOCK_SUSPEND,
+			"backlight_present");
+
+	ret = platform_device_register(&primou_backlight);
+	if (ret)
+		return ret;
 
 	msm_fb_add_device(pdev);
 
@@ -695,7 +770,6 @@ static struct platform_driver this_driver = {
 static struct msm_fb_panel_data primouwvga_panel_data = {
 	.on = mddi_primou_panel_on,
 	.off = mddi_primou_panel_off,
-	.set_backlight = mddi_primou_panel_set_backlight,
 };
 
 static struct platform_device this_device = {
@@ -757,4 +831,18 @@ static int __init primouwvga_init(void)
 	return ret;
 }
 
+static int __init primou_backlight_init(void)
+{
+    int ret;
+    ret = platform_driver_register(&primou_backlight_driver);
+    if (ret)
+    {
+        printk(KERN_ERR "%s not able to register the device\n",
+            __func__);
+        platform_driver_unregister(&primou_backlight_driver);
+    }
+    return ret;
+}
+
 device_initcall(primouwvga_init);
+module_init(primou_backlight_init);
