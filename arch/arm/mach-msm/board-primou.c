@@ -2948,7 +2948,7 @@ static struct resource ram_console_resources[] = {
 		},
 };
 
-+static struct platform_device ram_console_device = {
+static struct platform_device ram_console_device = {
 	.name			= "ram_console",
 	.id				= -1,
 	.num_resources	= ARRAY_SIZE(ram_console_resources),
