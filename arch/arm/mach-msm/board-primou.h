@@ -177,7 +177,6 @@
 /*display*/
 extern struct platform_device msm_device_mdp;
 extern struct platform_device msm_device_mddi0;
-extern unsigned long msm_fb_base;
 extern int panel_type;
 
 int primou_init_mmc(unsigned int sys_rev);
