@@ -2635,12 +2635,6 @@ static struct msm_otg_platform_data msm_otg_pdata = {
 	.phy_type = CI_45NM_INTEGRATED_PHY,
 };
 
-static struct resource msm_fb_resources[] = {
-	{
-		.flags  = IORESOURCE_DMA,
-	}
-};
-
 static struct android_pmem_platform_data android_pmem_pdata = {
 	.name = "pmem",
 	.allocator_type = PMEM_ALLOCATORTYPE_ALLORNOTHING,
