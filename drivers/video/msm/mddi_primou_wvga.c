@@ -33,10 +33,8 @@
 #define write_client_reg(val, reg) mddi_queue_register_write(reg, val, TRUE, 0);
 
 extern int panel_type;
-static uint8_t last_val = 102;
 /* use one flag to have better backlight on/off performance */
 static int primou_set_dim = 1;
-static struct wake_lock panel_idle_lock;
 
 static struct mddi_panel_platform_data *pdata;
 static struct msm_fb_panel_data primouwvga_panel_data;
