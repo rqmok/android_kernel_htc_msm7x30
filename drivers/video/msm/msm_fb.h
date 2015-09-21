@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2013, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -195,6 +195,7 @@ struct msm_fb_data_type {
 	u32 mdp_rev;
 	u32 writeback_state;
 	bool writeback_active_cnt;
+	bool writeback_initialized;
 	int cont_splash_done;
 	void *cpu_pm_hdl;
 	u32 acq_fen_cnt;
@@ -214,10 +215,11 @@ struct msm_fb_data_type {
 	void *msm_fb_backup;
 	boolean panel_driver_on;
 	int vsync_sysfs_created;
-	uint32 sec_mapped;
-	uint32 sec_active;
 	void *copy_splash_buf;
 	unsigned char *copy_splash_phys;
+	uint32 sec_mapped;
+	uint32 sec_active;
+	uint32 max_map_size;
 };
 struct msm_fb_backup_type {
 	struct fb_info info;
@@ -244,40 +246,9 @@ int calc_fb_offset(struct msm_fb_data_type *mfd, struct fb_info *fbi, int bpp);
 void msm_fb_wait_for_fence(struct msm_fb_data_type *mfd);
 int msm_fb_signal_timeline(struct msm_fb_data_type *mfd);
 void msm_fb_release_timeline(struct msm_fb_data_type *mfd);
-#ifdef CONFIG_FB_BACKLIGHT
-void msm_fb_config_backlight(struct msm_fb_data_type *mfd);
-#endif
 
 void fill_black_screen(bool on, uint8 pipe_num, uint8 mixer_num);
 int msm_fb_check_frame_rate(struct msm_fb_data_type *mfd,
 				struct fb_info *info);
-
-#ifdef CONFIG_FB_MSM_LOGO
-#define INIT_IMAGE_FILE "/initlogo.rle"
-int load_565rle_image(char *filename, bool bf_supported);
-#endif
-
-#define PR_DISP_DEBUG(fmt, args...)  printk(KERN_DEBUG "[DISP] "fmt, ##args);
-#define PR_DISP_ERR(fmt, args...)  printk(KERN_ERR "[DISP] "fmt, ##args);
-
-/*
- * This is used to communicate event between msm_fb, mddi, mddi_client,
- * and board.
- * It's mainly used to reset the display system.
- * Also, it is used for battery power policy.
- *
- */
-#define NOTIFY_MDDI     0x00000000
-#define NOTIFY_POWER    0x00000001
-#define NOTIFY_MSM_FB   0x00000010
-
-extern int register_display_notifier(struct notifier_block *nb);
-extern int display_notifier_call_chain(unsigned long val, void *data);
-
-#define display_notifier(fn, pri) {                     \
-	static struct notifier_block fn##_nb =          \
-	{ .notifier_call = fn, .priority = pri };       \
-	register_display_notifier(&fn##_nb);		\
-}
 
 #endif /* MSM_FB_H */

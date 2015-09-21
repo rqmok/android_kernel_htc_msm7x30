@@ -268,6 +268,7 @@ typedef void (*fxn)(u32 data);
 #define CMD_REQ_COMMIT	0x0002
 #define CMD_CLK_CTRL	0x0004
 #define CMD_REQ_NO_MAX_PKT_SIZE 0x0008
+#define CMD_REQ_SINGLE_TX 0x0010
 
 struct dcs_cmd_req {
 	struct dsi_cmd_desc *cmds;
@@ -293,6 +294,8 @@ void mipi_dsi_bist_ctrl(void);
 int mipi_dsi_buf_alloc(struct dsi_buf *, int size);
 int mipi_dsi_cmd_dma_add(struct dsi_buf *dp, struct dsi_cmd_desc *cm);
 int mipi_dsi_cmds_tx(struct dsi_buf *dp, struct dsi_cmd_desc *cmds, int cnt);
+int mipi_dsi_cmds_single_tx(struct dsi_buf *dp, struct dsi_cmd_desc *cmds,
+								int cnt);
 
 int mipi_dsi_cmd_dma_tx(struct dsi_buf *dp);
 int mipi_dsi_cmd_reg_tx(uint32 data);
@@ -336,8 +339,9 @@ void mipi_dsi_clk_deinit(struct device *dev);
 #ifdef CONFIG_FB_MSM_MIPI_DSI
 void mipi_dsi_clk_enable(void);
 void mipi_dsi_clk_disable(void);
-void mipi_dsi_prepare_clocks(void);
 void mipi_dsi_unprepare_clocks(void);
+void mipi_dsi_prepare_ahb_clocks(void);
+void mipi_dsi_unprepare_ahb_clocks(void);
 void mipi_dsi_ahb_ctrl(u32 enable);
 void mipi_dsi_phy_ctrl(int on);
 #else
@@ -345,23 +349,27 @@ static inline void mipi_dsi_clk_enable(void)
 {
 	/* empty */
 }
-void mipi_dsi_clk_disable(void)
+static inline void mipi_dsi_clk_disable(void)
 {
 	/* empty */
 }
-void mipi_dsi_prepare_clocks(void)
+static inline void mipi_dsi_unprepare_clocks(void)
 {
 	/* empty */
 }
-void mipi_dsi_unprepare_clocks(void)
+static inline void mipi_dsi_prepare_ahb_clocks(void)
 {
 	/* empty */
 }
-void mipi_dsi_ahb_ctrl(u32 enable)
+static inline void mipi_dsi_unprepare_ahb_clocks(void)
 {
 	/* empty */
 }
-void mipi_dsi_phy_ctrl(int on)
+static inline void mipi_dsi_ahb_ctrl(u32 enable)
+{
+	/* empty */
+}
+static inline void mipi_dsi_phy_ctrl(int on)
 {
 	/* empty */
 }

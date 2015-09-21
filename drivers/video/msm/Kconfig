@@ -27,6 +27,10 @@ config FB_MSM_LOGO
 	---help---
 	  Show /initlogo.rle during boot.
 
+config FB_MSM_HDPI
+	bool "Increased memory allocation needed for HDPI devices"
+	default n
+
 config FB_MSM_LCDC_HW
 	bool
 	default n
@@ -122,7 +126,7 @@ config FB_MSM_LVDS
 	default n
 
 config FB_MSM_OVERLAY
-	depends on FB_MSM_MDP40 && ANDROID_PMEM
+	depends on FB_MSM_MDP40
 	bool "MDP4 overlay support"
 	default n
 
@@ -149,6 +153,11 @@ config FB_MSM_MDDI_TOSHIBA_COMMON_VGA
 	select FB_MSM_MDDI_TOSHIBA_COMMON
 	default n
 
+config FB_MSM_MDDI_NOVATEK_FWVGA
+	bool
+	select FB_MSM_MDDI
+	default n
+
 config FB_MSM_MDDI_ORISE
 	bool
 	select FB_MSM_MDDI
@@ -162,6 +171,10 @@ config FB_MSM_MDDI_QUICKVX
 config FB_MSM_MDDI_AUTO_DETECT
 	bool
 	select FB_MSM_MDDI
+	default n
+
+config FB_MSM_MDDI_DISABLE_REVERSE
+	bool "DISABLE REVERSE"
 	default n
 
 config FB_MSM_LCDC_AUTO_DETECT
@@ -213,6 +226,10 @@ config FB_MSM_MIPI_DSI_ORISE
         default n
 
 config FB_MSM_MIPI_DSI_NT35516
+	bool
+	select FB_MSM_MIPI_DSI
+
+config FB_MSM_MIPI_DSI_NT35590
 	bool
 	select FB_MSM_MIPI_DSI
 
@@ -382,6 +399,15 @@ config FB_MSM_MIPI_NT35516_CMD_QHD_PT
         select FB_MSM_MIPI_DSI_NT35516
         default n
 
+config FB_MSM_MIPI_NT35590_CMD_720P_PT
+        bool
+        select FB_MSM_MIPI_DSI_NT35590
+        default n
+
+config FB_MSM_MIPI_NT35590_VIDEO_720P_PT
+        bool
+        select FB_MSM_MIPI_DSI_NT35590
+        default n
 
 config FB_MSM_MIPI_CHIMEI_WXGA
 	bool "LVDS Chimei WXGA Panel using Toshiba MIPI DSI-to-LVDS bridge."
@@ -437,30 +463,8 @@ config FB_MSM_WRITEBACK_MSM_PANEL
         bool "MDP overlay write back panel enable"
 	---help---
 	  Support for MDP4 OVERLAY write back mode
-choice
-	prompt "LCD Panel"
-	default FB_MSM_MDDI_AUTO_DETECT
 
-config FB_MSM_VISION_PANEL
-	depends on FB_MSM_LCDC_HW && MACH_VISION
-	bool "LCDC Vision WVGA Panels"
-	select FB_MSM_LCDC_PANEL
-	---help---
-	  Support for Vision WVGA (800x480) panels
-
-config FB_MSM_SAGA_PANEL
-	depends on FB_MSM_LCDC_HW && MACH_SAGA
-	bool "LCDC Saga WVGA Panels"
-	select FB_MSM_LCDC_PANEL
-	---help---
-	  Support for Saga WVGA (800x480) panels
-
-config FB_MSM_SPADE_PANEL
-	depends on FB_MSM_LCDC_HW && MACH_SPADE
-	bool "LCDC Spade WVGA Panels"
-	select FB_MSM_LCDC_PANEL
-	---help---
-	  Support for Spade WVGA (800x480) panels
+menu "LCD Panel"
 
 config FB_MSM_LCDC_PRISM_WVGA_PANEL
 	depends on FB_MSM_LCDC_HW
@@ -580,6 +584,8 @@ config FB_MSM_MIPI_PANEL_DETECT
 	select FB_MSM_MIPI_ORISE_CMD_720P_PT
 	select FB_MSM_MIPI_NT35516_VIDEO_QHD_PT
 	select FB_MSM_MIPI_NT35516_CMD_QHD_PT
+	select FB_MSM_MIPI_NT35590_CMD_720P_PT
+	select FB_MSM_MIPI_NT35590_VIDEO_720P_PT
 	select FB_MSM_MIPI_SIMULATOR_VIDEO
 	select FB_MSM_MIPI_CHIMEI_WXGA
 	select FB_MSM_MIPI_CHIMEI_WUXGA
@@ -620,6 +626,8 @@ config FB_MSM_LCDC_MIPI_PANEL_AUTO_DETECT
 	select FB_MSM_MIPI_NT35510_CMD_WVGA_PT
 	select FB_MSM_MIPI_NT35516_VIDEO_QHD_PT
 	select FM_MSM_MIPI_NT35516_CMD_QHD_PT
+	select FM_MSM_MIPI_NT35590_CMD_720P_PT
+	select FM_MSM_MIPI_NT35590_VIDEO_720P_PT
 	select FB_MSM_MIPI_SIMULATOR_VIDEO
 	---help---
 	  Support for LCDC + MIPI panel auto detect
@@ -628,6 +636,7 @@ config FB_MSM_LVDS_MIPI_PANEL_DETECT
 	bool "LVDS + MIPI Panel Auto Detect"
 	select FB_MSM_LVDS_CHIMEI_WXGA
 	select FB_MSM_LVDS_FRC_FHD
+	select FB_MSM_MIPI_NT35590_VIDEO_720P_PT
 	select FB_MSM_MIPI_TOSHIBA_VIDEO_WVGA_PT
 	select FB_MSM_MIPI_TOSHIBA_VIDEO_WSVGA_PT
 	select FB_MSM_MIPI_TOSHIBA_VIDEO_WUXGA
@@ -638,6 +647,7 @@ config FB_MSM_LVDS_MIPI_PANEL_DETECT
 	select FB_MSM_MIPI_NOVATEK_CMD_QHD_PT
 	select FB_MSM_MIPI_NT35510_VIDEO_WVGA_PT
 	select FB_MSM_MIPI_NT35510_CMD_WVGA_PT
+	select FB_MSM_MIPI_NT35590_CMD_720P_PT
 	select FB_MSM_MIPI_ORISE_VIDEO_720P_PT
 	select FB_MSM_MIPI_ORISE_CMD_720P_PT
 	select FB_MSM_MIPI_SIMULATOR_VIDEO
@@ -669,6 +679,104 @@ config FB_MSM_MDDI_TOSHIBA_WVGA
 	select FB_MSM_MDDI_TOSHIBA_COMMON
 	---help---
 	  Support for MDDI Toshiba (800x480) WVGA panel
+
+config FB_MSM_MDDI_SONY_HVGA
+	bool "MDDI Sony HVGA Panel"
+	select FB_MSM_MDDI
+	---help---
+	  Support for MDDI Sony HVGA (320x480) panel
+
+config FB_MSM_MDDI_HITACHI_HVGA
+	bool "MDDI Hitachi HVGA Panel"
+	select FB_MSM_MDDI
+	---help---
+	  Support for MDDI Hitachi HVGA (320x480) panel
+
+config FB_MSM_MDDI_SII_HVGA
+	bool "MDDI Sii HVGA Panel"
+	select FB_MSM_MDDI
+	default n
+	---help---
+	  Support for MDDI Sii HVGA (320x480) panel
+
+config FB_MSM_MDDI_AUO_HVGA
+	bool "MDDI Auo HVGA Panel"
+	select FB_MSM_MDDI
+	default n
+	---help---
+	  Support for MDDI Auo HVGA (320x480) panel
+
+config FB_MSM_MDDI_NOVATEK_TMD_MDP42
+	bool "TMD MDP42 Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for TMD MDP42 panel connected
+	  to the MDDI Novatek micro controller
+
+config FB_MSM_MDDI_NOVATEK_SHARP_LS040T8LX01
+	bool "SHARP LS040T8LX01 Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for SHARP LS040T8LX01 panel connected
+	  to the MDDI Novatek micro controller
+
+config FB_MSM_MDDI_NOVATEK_SHARP_LS042T3LX
+	bool "SHARP LS042T3LX Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for SHARP_LS042T3LX panel connected
+	  to the MDDI Novatek micro controller
+
+config FB_MSM_MDDI_NOVATEK_SONY_ACX424AKM
+	bool "SONY ACX424AKM Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for SONY_ACX424AKM panel connected
+	  to the MDDI Novatek micro controller
+
+config FB_MSM_MDDI_NOVATEK_SONY_ACX427AK
+	bool "SONY ACX427AK Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for SONY_ACX427AK panel connected
+	  to the MDDI Novatek micro controller
+
+config FB_MSM_MDDI_NOVATEK_SONY_ACX424AK
+	bool "SONY ACX424AK Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for SONY_ACX424AK panel connected
+	  to the MDDI Novatek micro controller
+
+config FB_MSM_MDDI_NOVATEK_HITACHI_DX09D09VM
+	bool "HITACHI DX09D09VM Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for HITACHI_DX09D09VM panel connected
+	  to the MDDI Novatek micro controller
+
+config FB_MSM_MDDI_NOVATEK_SHARP_LS033T3LX01
+	bool "SHARP LS033T3LX01 Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for SHARP_LS033T3LX01 panel connected
+	  to the MDDI Novatek micro controller
+
+config FB_MSM_MDDI_NOVATEK_TMD_LT033MDV1000
+	bool "TMD LT033MDV1000 Panel"
+	select FB_MSM_MDDI_NOVATEK_FWVGA
+	default n
+	---help---
+	  Support for TMD_LT033MDV1000 panel connected
+	  to the MDDI Novatek micro controller
 
 config FB_MSM_MDDI_SHARP_QVGA_128x128
 	bool "MDDI Sharp QVGA Dual Panel"
@@ -750,6 +858,24 @@ config FB_MSM_MIPI_NT35516_CMD_QHD_PT_PANEL
         bool "MIPI NT35516 Command qHD PT Panel"
         select FB_MSM_MIPI_NT35516_CMD_QHD_PT
 
+config FB_MSM_MIPI_NT35590_CMD_720P_PT_PANEL
+        bool "MIPI NT35590 Command 720p PT Panel"
+        select FB_MSM_MIPI_NT35590_CMD_720P_PT
+	---help---
+	Support for Truly NT35590 panel. This
+	panel supports MIPI DSI interface in
+	Command mode. The panel resolution is
+	720p (720x1280).
+
+config FB_MSM_MIPI_NT35590_VIDEO_720P_PT_PANEL
+        bool "MIPI NT35590 Video 720p PT Panel"
+        select FB_MSM_MIPI_NT35590_VIDEO_720P_PT
+	---help---
+	Support for Truly NT35590 panel. This
+	panel supports MIPI DSI interface in
+	Video mode. The panel resolution is
+	720p (720x1280).
+
 config FB_MSM_MIPI_SIMULATOR_VIDEO_PANEL
 	bool "MIPI Simulator Video Panel"
 	select FB_MSM_MIPI_SIMULATOR_VIDEO
@@ -770,7 +896,7 @@ config FB_MSM_PANEL_NONE
 	bool "NONE"
 	---help---
 	  This will disable LCD panel
-endchoice
+endmenu
 
 config LGIT_VIDEO_WXGA_CABC
 	bool "Content Adaptive Backlight Control on LGIT WXGA Panel"

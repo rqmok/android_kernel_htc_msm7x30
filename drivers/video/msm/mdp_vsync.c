@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2009, 2012 The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2009, 2012-2013 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -224,7 +224,11 @@ static void mdp_set_sync_cfg_0(struct msm_fb_data_type *mfd, int vsync_cnt)
 {
 	unsigned long cfg;
 
-	cfg = mfd->total_lcd_lines - 1;
+	if (mfd->panel_info.lcd.total_lines)
+		cfg = mfd->panel_info.lcd.total_lines;
+	else
+		cfg = mfd->total_lcd_lines - 1;
+
 	cfg <<= MDP_SYNCFG_HGT_LOC;
 	if (mfd->panel_info.lcd.hw_vsync_mode)
 		cfg |= MDP_SYNCFG_VSYNC_EXT_EN;
@@ -238,7 +242,11 @@ static void mdp_set_sync_cfg_1(struct msm_fb_data_type *mfd, int vsync_cnt)
 {
 	unsigned long cfg;
 
-	cfg = mfd->total_lcd_lines - 1;
+	if (mfd->panel_info.lcd.total_lines)
+		cfg = mfd->panel_info.lcd.total_lines;
+	else
+		cfg = mfd->total_lcd_lines - 1;
+
 	cfg <<= MDP_SYNCFG_HGT_LOC;
 	if (mfd->panel_info.lcd.hw_vsync_mode)
 		cfg |= MDP_SYNCFG_VSYNC_EXT_EN;
@@ -364,50 +372,6 @@ void mdp_config_vsync(struct platform_device *pdev,
 			     HRTIMER_MODE_REL);
 		mfd->dma_hrtimer.function = mdp_dma2_vsync_hrtimer_handler;
 		mfd->vsync_width_boundary = vmalloc(mfd->panel_info.xres * 4);
-#endif
-
-#ifdef CONFIG_FB_MSM_MDDI
-		mfd->channel_irq = 0;
-		if (mfd->panel_info.lcd.hw_vsync_mode) {
-			u32 vsync_gpio = mfd->vsync_gpio;
-			u32 ret;
-
-			if (vsync_gpio == -1) {
-				MSM_FB_INFO("vsync_gpio not defined!\n");
-				goto err_handle;
-			}
-
-			ret = gpio_tlmm_config(GPIO_CFG
-					(vsync_gpio,
-					(mfd->use_mdp_vsync) ? 1 : 0,
-					GPIO_CFG_INPUT,
-					GPIO_CFG_PULL_DOWN,
-					GPIO_CFG_2MA),
-					GPIO_CFG_ENABLE);
-			if (ret)
-				goto err_handle;
-
-			/*
-			 * if use_mdp_vsync, then no interrupt need since
-			 * mdp_vsync is feed directly to mdp to reset the
-			 * write pointer counter. therefore no irq_handler
-			 * need to reset write pointer counter.
-			 */
-			if (!mfd->use_mdp_vsync) {
-				mfd->channel_irq = MSM_GPIO_TO_INT(vsync_gpio);
-				if (request_irq
-				    (mfd->channel_irq,
-				     &mdp_hw_vsync_handler_proxy,
-				     IRQF_TRIGGER_FALLING, "VSYNC_GPIO",
-				     (void *)mfd)) {
-					MSM_FB_INFO
-					("irq=%d failed! vsync_gpio=%d\n",
-						mfd->channel_irq,
-						vsync_gpio);
-					goto err_handle;
-				}
-			}
-		}
 #endif
 		mdp_hw_vsync_clk_enable(mfd);
 		mdp_set_vsync((unsigned long)mfd);

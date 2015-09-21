@@ -4,7 +4,6 @@ else
 obj-y := msm_fb.o
 
 obj-$(CONFIG_FB_MSM_LOGO) += logo.o
-obj-$(CONFIG_FB_BACKLIGHT) += msm_fb_bl.o
 
 ifeq ($(CONFIG_FB_MSM_MDP_HW),y)
 # MDP
@@ -26,7 +25,7 @@ endif
 
 ifeq ($(CONFIG_FB_MSM_OVERLAY),y)
 obj-y += mdp4_overlay.o
-obj-y += mdp4_overlay_lcdc.o
+obj-$(CONFIG_FB_MSM_LCDC) += mdp4_overlay_lcdc.o
 ifeq ($(CONFIG_FB_MSM_MIPI_DSI),y)
 obj-y += mdp4_overlay_dsi_video.o
 obj-y += mdp4_overlay_dsi_cmd.o
@@ -82,6 +81,7 @@ obj-$(CONFIG_FB_MSM_MIPI_DSI_RENESAS) += mipi_renesas.o
 obj-$(CONFIG_FB_MSM_MIPI_DSI_TRULY) += mipi_truly.o
 obj-$(CONFIG_FB_MSM_MIPI_DSI_NT35510) += mipi_NT35510.o
 obj-$(CONFIG_FB_MSM_MIPI_DSI_NT35516) += mipi_truly_tft540960_1_e.o
+obj-$(CONFIG_FB_MSM_MIPI_DSI_NT35590) += mipi_NT35590.o
 obj-$(CONFIG_FB_MSM_MIPI_DSI_SIMULATOR) += mipi_simulator.o
 
 # MIPI Bridge
@@ -104,6 +104,20 @@ obj-y += mddi_toshiba.o
 obj-y += mddi_toshiba_vga.o
 obj-y += mddi_toshiba_wvga_pt.o
 obj-y += mddi_toshiba_wvga.o
+obj-y += mddi_novatek_fwvga.o
+obj-y += mddi_sony_s6d05a1_hvga.o
+obj-y += mddi_hitachi_r61529_hvga.o
+obj-y += mddi_sii_r61529_hvga.o
+obj-y += mddi_auo_s6d05a1_hvga.o
+obj-y += mddi_nt_tmd_mdp42.o
+obj-y += mddi_nt_sharp_ls040t8lx01.o
+obj-y += mddi_nt_sharp_ls042t3lx.o
+obj-y += mddi_nt_sony_acx424akm.o
+obj-y += mddi_nt_sony_acx427ak.o
+obj-y += mddi_nt_sony_acx424ak.o
+obj-y += mddi_nt_hitachi_dx09d09vm.o
+obj-y += mddi_nt_sharp_ls033t3lx01.o
+obj-y += mddi_nt_tmd_lt033mdv1000.o
 obj-y += mddi_sharp.o
 obj-y += mddi_orise.o
 obj-y += mddi_quickvx.o
@@ -114,6 +128,20 @@ obj-$(CONFIG_FB_MSM_MDDI_TOSHIBA_COMMON) += mddi_toshiba.o
 obj-$(CONFIG_FB_MSM_MDDI_TOSHIBA_COMMON_VGA) += mddi_toshiba_vga.o
 obj-$(CONFIG_FB_MSM_MDDI_TOSHIBA_WVGA_PORTRAIT) += mddi_toshiba_wvga_pt.o
 obj-$(CONFIG_FB_MSM_MDDI_TOSHIBA_WVGA) += mddi_toshiba_wvga.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_FWVGA) += mddi_novatek_fwvga.o
+obj-$(CONFIG_FB_MSM_MDDI_SONY_HVGA) += mddi_sony_s6d05a1_hvga.o
+obj-$(CONFIG_FB_MSM_MDDI_HITACHI_HVGA) += mddi_hitachi_r61529_hvga.o
+obj-$(CONFIG_FB_MSM_MDDI_SII_HVGA) += mddi_sii_r61529_hvga.o
+obj-$(CONFIG_FB_MSM_MDDI_AUO_HVGA) += mddi_auo_s6d05a1_hvga.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_TMD_MDP42) += mddi_nt_tmd_mdp42.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_SHARP_LS040T8LX01) += mddi_nt_sharp_ls040t8lx01.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_SHARP_LS042T3LX) += mddi_nt_sharp_ls042t3lx.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_SONY_ACX424AKM) += mddi_nt_sony_acx424akm.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_SONY_ACX427AK) += mddi_nt_sony_acx427ak.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_SONY_ACX424AK) += mddi_nt_sony_acx424ak.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_HITACHI_DX09D09VM) += mddi_nt_hitachi_dx09d09vm.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_SHARP_LS033T3LX01) += mddi_nt_sharp_ls033t3lx01.o
+obj-$(CONFIG_FB_MSM_MDDI_NOVATEK_TMD_LT033MDV1000) += mddi_nt_tmd_lt033mdv1000.o
 obj-$(CONFIG_FB_MSM_MDDI_SHARP_QVGA_128x128) += mddi_sharp.o
 obj-$(CONFIG_FB_MSM_MDDI_ORISE) += mddi_orise.o
 obj-$(CONFIG_FB_MSM_MDDI_QUICKVX) += mddi_quickvx.o
@@ -127,6 +155,7 @@ obj-y += mipi_orise_video_720p_pt.o mipi_orise_cmd_720p_pt.o
 obj-y += mipi_renesas_video_fwvga_pt.o mipi_renesas_cmd_fwvga_pt.o
 obj-y += mipi_NT35510_video_wvga_pt.o mipi_NT35510_cmd_wvga_pt.o
 obj-y += mipi_truly_tft540960_1_e_video_qhd_pt.o mipi_truly_tft540960_1_e_cmd_qhd_pt.o
+obj-y += mipi_NT35590_cmd_720p_pt.o mipi_NT35590_video_720p_pt.o
 obj-y += mipi_chimei_wxga_pt.o
 obj-y += mipi_chimei_wuxga.o
 obj-y += mipi_truly_video_wvga_pt.o
@@ -146,6 +175,8 @@ obj-$(CONFIG_FB_MSM_MIPI_NT35510_CMD_WVGA_PT) += mipi_NT35510_cmd_wvga_pt.o
 obj-$(CONFIG_FB_MSM_MIPI_NT35510_VIDEO_WVGA_PT) += mipi_NT35510_video_wvga_pt.o
 obj-$(CONFIG_FB_MSM_MIPI_NT35516_CMD_QHD_PT) += mipi_truly_tft540960_1_e_cmd_qhd_pt.o
 obj-$(CONFIG_FB_MSM_MIPI_NT35516_VIDEO_QHD_PT) += mipi_truly_tft540960_1_e_video_qhd_pt.o
+obj-$(CONFIG_FB_MSM_MIPI_NT35590_CMD_720P_PT) += mipi_NT35590_cmd_720p_pt.o
+obj-$(CONFIG_FB_MSM_MIPI_NT35590_VIDEO_720P_PT) += mipi_NT35590_video_720p_pt.o
 obj-$(CONFIG_FB_MSM_MIPI_SIMULATOR_VIDEO) += mipi_simulator_video.o
 obj-$(CONFIG_FB_MSM_MIPI_CHIMEI_WXGA) += mipi_chimei_wxga_pt.o
 obj-$(CONFIG_FB_MSM_MIPI_CHIMEI_WUXGA) += mipi_chimei_wuxga.o
@@ -192,10 +223,6 @@ obj-y += msm_fb_panel.o
 obj-$(CONFIG_FB_MSM_EBI2_EPSON_S1D_QVGA_PANEL) += ebi2_epson_s1d_qvga.o
 endif
 endif
-
-obj-$(CONFIG_FB_MSM_SAGA_PANEL) += lcdc_sony_wvga.o
-obj-$(CONFIG_FB_MSM_SPADE_PANEL) += lcdc_spade_wvga.o
-obj-$(CONFIG_FB_MSM_VISION_PANEL) += lcdc_sony_wvga.o lcdc_samsung_s6e63m0_wvga.o lcdc_samsung_tl2796a_wvga.o
 
 obj-$(CONFIG_MSM_VIDC_1080P) += vidc/
 obj-$(CONFIG_MSM_VIDC_720P) += vidc/
