@@ -327,25 +327,6 @@ static int __htc_power_policy(void)
 	return 0;
 }
 
-/*
- * Jay, 7/1/09'
- */
-static int htc_power_policy(struct notifier_block *nfb,
-		unsigned long action, void *ignored)
-{
-	int rc;
-	switch (action) {
-	case NOTIFY_POWER:
-		pr_info("[BATT] %s: enter.\n", __func__);
-		rc = __htc_power_policy();
-		if (rc)
-			return NOTIFY_STOP;
-		else
-			return NOTIFY_OK;
-	}
-	return NOTIFY_DONE; /* we did not care other action here */
-}
-
 unsigned int batt_get_status(enum power_supply_property psp)
 {
 	union power_supply_propval val;
@@ -2229,9 +2210,6 @@ static struct platform_driver htc_battery_driver = {
 	},
 };
 
-static struct notifier_block batt_notify = {
-	.notifier_call = htc_power_policy,
-};
 
 static BLOCKING_NOTIFIER_HEAD(battery_notifier_list);
 int batt_register_client(struct notifier_block *nb)
@@ -2260,13 +2238,6 @@ static int __init htc_battery_init(void)
 #endif
 	platform_driver_register(&htc_battery_driver);
 	platform_driver_register(&htc_battery_core_driver);
-	batt_register_client(&batt_notify);
-	/* Jay, The msm_fb need to consult htc_battery for power policy */
-#ifdef CONFIG_FB_MSM
-#ifndef CONFIG_ARCH_MSM7X27A
-	display_notifier(htc_power_policy, NOTIFY_POWER);
-#endif
-#endif
 	return 0;
 }
 
