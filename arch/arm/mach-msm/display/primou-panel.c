@@ -75,7 +75,6 @@ static int mddi_novatec_power(int on)
 {
 	int rc;
 	unsigned config;
-	printk(KERN_DEBUG "%s(%d)\n", __func__, on);
 
 	if (on) {
 
@@ -84,7 +83,7 @@ static int mddi_novatec_power(int on)
 		config = GPIO_CFG(PRIMOU_LCD_ID0, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 
-/*		if (panel_type == PANEL_ID_PRIMO_SONY) {
+		if (panel_type == PANEL_ID_PRIMO_SONY) {
 			config = PCOM_GPIO_CFG(PRIMOU_LCD_ID1, 0, GPIO_INPUT, GPIO_NO_PULL, GPIO_2MA);
 			rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 			vreg_enable(V_LCMIO_1V8);
@@ -98,7 +97,7 @@ static int mddi_novatec_power(int on)
 			msleep(1);
 			gpio_set_value(PRIMOU_LCD_RSTz, 1);
 			msleep(15);
-		} else {*/
+		} else {
 			config = GPIO_CFG(PRIMOU_LCD_ID1, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_2MA);
 			rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 			vreg_enable(V_LCMIO_1V8);
@@ -112,20 +111,20 @@ static int mddi_novatec_power(int on)
 			msleep(1);
 			gpio_set_value(PRIMOU_LCD_RSTz, 1);
 			msleep(20);
-/*		}*/
+		}
 	} else {
-/*		if (panel_type == PANEL_ID_PRIMO_SONY) {
+		if (panel_type == PANEL_ID_PRIMO_SONY) {
 			msleep(80);
 			gpio_set_value(PRIMOU_LCD_RSTz, 0);
 			msleep(10);
 			vreg_disable(V_LCMIO_1V8);
 			vreg_disable(V_LCMIO_2V8);
-		} else {*/
+		} else {
 			msleep(20);
 			gpio_set_value(PRIMOU_LCD_RSTz, 0);
 			vreg_disable(V_LCMIO_2V8);
 			vreg_disable(V_LCMIO_1V8);
-/*		}*/
+		}
 
 		config = GPIO_CFG(PRIMOU_MDDI_TE, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
