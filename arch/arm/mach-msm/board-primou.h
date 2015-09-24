@@ -40,13 +40,25 @@
 
 #define PMEM_KERNEL_EBI0_SIZE	0x00500000
 
-#define MSM_FB_SIZE    roundup((800 * ALIGN(480, 32) * 4 * 3), 4096) /* 4 bpp x 3 pages, Note: must be multiple of 4096 */
+#ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
+#define MSM_FB_SIZE   (800 * 480 * 4 * 3) /* 4bpp * 3 Pages */
+#else
+#define MSM_FB_SIZE   (800 * 480 * 4 * 2) /* 4bpp * 2 Pages */
+#endif
+
+#ifdef CONFIG_FB_MSM_OVERLAY0_WRITEBACK
+/* width x height x 3 bpp x 2 frame buffer */
+#define MSM_FB_OVERLAY0_WRITEBACK_SIZE roundup((800 * 480 * 3 * 2), 4096)
+#else
+#define MSM_FB_OVERLAY0_WRITEBACK_SIZE  0
+#endif
 
 #ifdef CONFIG_ION_MSM
 #define MSM_ION_CAMERA_SIZE	MSM_PMEM_ADSP_SIZE
 #define MSM_ION_SF_BASE		MSM_PMEM_SF_BASE
 #define MSM_ION_SF_SIZE		MSM_PMEM_SF_SIZE
-#define MSM_ION_HEAP_NUM	3
+#define MSM_ION_WB_SIZE		MSM_FB_OVERLAY0_WRITEBACK_SIZE
+#define MSM_ION_HEAP_NUM	4
 #endif
 
 

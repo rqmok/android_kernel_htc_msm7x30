@@ -24,7 +24,6 @@
 
 #include <asm/io.h>
 #include <asm/mach-types.h>
-#include <mach/msm_fb.h>
 #include <mach/msm_iomap.h>
 #include <mach/vreg.h>
 #include <linux/msm_ion.h>
@@ -33,7 +32,6 @@
 #include "../board-primou.h"
 #include "../devices.h"
 #include "../proc_comm.h"
-#include "../../../../drivers/video/msm/mdp_hw.h"
 
 
 int device_fb_detect_panel(const char *name)
@@ -96,7 +94,6 @@ static int mddi_novatec_power(int on)
 			gpio_set_value(PRIMOU_LCD_RSTz, 0);
 			msleep(1);
 			gpio_set_value(PRIMOU_LCD_RSTz, 1);
-			msleep(15);
 		} else {
 			config = GPIO_CFG(PRIMOU_LCD_ID1, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_2MA);
 			rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
@@ -110,17 +107,16 @@ static int mddi_novatec_power(int on)
 			gpio_set_value(PRIMOU_LCD_RSTz, 0);
 			msleep(1);
 			gpio_set_value(PRIMOU_LCD_RSTz, 1);
-			msleep(20);
 		}
 	} else {
 		if (panel_type == PANEL_ID_PRIMO_SONY) {
-			msleep(80);
+			msleep(40);
 			gpio_set_value(PRIMOU_LCD_RSTz, 0);
-			msleep(10);
+			msleep(5);
 			vreg_disable(V_LCMIO_1V8);
 			vreg_disable(V_LCMIO_2V8);
 		} else {
-			msleep(20);
+			msleep(5);
 			gpio_set_value(PRIMOU_LCD_RSTz, 0);
 			vreg_disable(V_LCMIO_2V8);
 			vreg_disable(V_LCMIO_1V8);
@@ -152,7 +148,13 @@ static struct msm_panel_common_pdata mdp_pdata = {
 	.gpio = 30,
 	.mdp_max_clk = 192000000,
 	.mdp_rev = MDP_REV_40,
+	.mem_hid = BIT(ION_CP_WB_HEAP_ID),
 };
+
+static void __init reserve_mdp_memory(void)
+{
+	mdp_pdata.ov0_wb_size = MSM_FB_OVERLAY0_WRITEBACK_SIZE;
+}
 
 int __init primou_init_panel(void)
 {
@@ -174,6 +176,7 @@ int __init primou_init_panel(void)
 	if (ret)
 		return ret;
 
+	reserve_mdp_memory();
 	msm_fb_register_device("mdp", &mdp_pdata);
 	msm_fb_register_device("pmdh", &mddi_pdata);
 

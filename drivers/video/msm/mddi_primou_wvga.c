@@ -49,7 +49,7 @@ struct nov_regs {
 
 struct nov_regs pro_lgd_init_seq[] = {
 	{0x1100, 0x00},
-	{REG_WAIT, 20},
+	{REG_WAIT, 10},
 	{0xf000, 0x55},
 	{0xf001, 0xaa},
 	{0xf002, 0x52},
@@ -495,7 +495,7 @@ struct nov_regs pro_lgd_init_seq[] = {
 	{0x5500, 0x03},
 	{0x5E00, 0x06},
 	{0x3500, 0x00},
-	{REG_WAIT, 160},
+	{REG_WAIT, 80},
 	{0x2900, 0x00},
 };
 
@@ -599,8 +599,11 @@ static int primou_panel_init(void)
 
 static int mddi_primou_panel_on(struct platform_device *pdev)
 {
-	mddi_host_client_cnt_reset();
     primou_panel_init();
+
+	/* Turn on CABC */
+	//write_client_reg(0x03, 0x5500);
+	//write_client_reg(0x2C, 0x5300);
 
 	if (panel_type == PANEL_ID_PRIMO_SONY) {
 		write_client_reg(0x00, 0x3600);
@@ -609,8 +612,7 @@ static int mddi_primou_panel_on(struct platform_device *pdev)
 		write_client_reg(0x24, 0x5300);
 	}
 
-	/* Turn on CABC */
-	write_client_reg(0x03, 0x5500);
+	/* Set CABC values */
 	write_client_reg(0x2C, 0x5300);
 
     return 0;
@@ -636,16 +638,8 @@ static int mddi_primou_panel_off(struct platform_device *pdev)
 static void mddi_primou_panel_set_backlight(struct msm_fb_data_type *mfd)
 {
 
-    if (primou_set_dim == 1)
-    {
-        write_client_reg(0x2C, 0x5300);
-        /* we dont need set dim again */
-        primou_set_dim = 0;
-    }
-
     printk(KERN_DEBUG "[BL] Setting bl to %d\n", mfd->bl_level);    
 
-    write_client_reg(0x00, 0x5500);
     write_client_reg(mfd->bl_level, 0x5100);
 
 }
@@ -705,7 +699,6 @@ static int __init primouwvga_init(void)
 	panel_data->panel_info.pdest = DISPLAY_1;
 	panel_data->panel_info.type = MDDI_PANEL;
 	panel_data->panel_info.mddi.vdopkt = MDDI_DEFAULT_PRIM_PIX_ATTR;
-	panel_data->panel_info.mddi.is_type1 = TRUE;
 	panel_data->panel_info.wait_cycle = 0;
 	panel_data->panel_info.bpp = 24;
 	panel_data->panel_info.clk_rate = 192000000;
@@ -723,7 +716,7 @@ static int __init primouwvga_init(void)
 	panel_data->panel_info.lcd.v_front_porch = 20;
 	panel_data->panel_info.lcd.v_pulse_width = 40;
 	panel_data->panel_info.lcd.hw_vsync_mode = TRUE;
-	panel_data->panel_info.lcd.vsync_notifier_period = (1 * HZ);
+	panel_data->panel_info.lcd.vsync_notifier_period = 0;
 
 	ret = platform_device_register(&this_device);
 	if (ret) {
