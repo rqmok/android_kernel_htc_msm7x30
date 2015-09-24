@@ -495,7 +495,7 @@ struct nov_regs pro_lgd_init_seq[] = {
 	{0x5500, 0x03},
 	{0x5E00, 0x06},
 	{0x3500, 0x00},
-	{REG_WAIT, 80},
+	{REG_WAIT, 50},
 	{0x2900, 0x00},
 };
 
@@ -620,6 +620,7 @@ static int mddi_primou_panel_on(struct platform_device *pdev)
 
 static int mddi_primou_panel_off(struct platform_device *pdev)
 {
+
     /* set dim off for performance */
 	if (panel_type == PANEL_ID_PRIMO_SONY) {
 		write_client_reg(0x0, 0x5300);
