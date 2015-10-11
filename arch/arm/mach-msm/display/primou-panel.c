@@ -148,13 +148,8 @@ static struct msm_panel_common_pdata mdp_pdata = {
 	.gpio = 30,
 	.mdp_max_clk = 192000000,
 	.mdp_rev = MDP_REV_40,
-	.mem_hid = BIT(ION_CP_WB_HEAP_ID),
 };
 
-static void __init reserve_mdp_memory(void)
-{
-	mdp_pdata.ov0_wb_size = MSM_FB_OVERLAY0_WRITEBACK_SIZE;
-}
 
 int __init primou_init_panel(void)
 {
@@ -176,7 +171,6 @@ int __init primou_init_panel(void)
 	if (ret)
 		return ret;
 
-	reserve_mdp_memory();
 	msm_fb_register_device("mdp", &mdp_pdata);
 	msm_fb_register_device("pmdh", &mddi_pdata);
 
