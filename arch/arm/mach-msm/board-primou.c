@@ -4114,21 +4114,15 @@ static struct memtype_reserve msm7x30_reserve_table[] __initdata = {
 static void __init size_pmem_devices(void)
 {
 #ifdef CONFIG_ANDROID_PMEM
+	android_pmem_adsp_pdata.start = MSM_PMEM_ADSP_BASE;
 	android_pmem_adsp_pdata.size = MSM_PMEM_ADSP_SIZE;
-#endif
-}
-
-static void __init reserve_pmem_memory(void)
-{
-#ifdef CONFIG_ANDROID_PMEM
-	msm7x30_reserve_table[MEMTYPE_EBI0].size += PMEM_KERNEL_EBI0_SIZE;
-	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_PMEM_ADSP_SIZE;
 #endif
 }
 
 static void __init size_ion_devices(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
+	ion_pdata.heaps[1].base = MSM_PMEM_ADSP_BASE;
 	ion_pdata.heaps[1].size = MSM_ION_MM_SIZE;
 	ion_pdata.heaps[2].size = MSM_ION_SF_SIZE;
 #endif
@@ -4137,8 +4131,8 @@ static void __init size_ion_devices(void)
 static void __init reserve_ion_memory(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
-	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_MM_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_SF_SIZE;
+	msm7x30_reserve_table[MEMTYPE_EBI0].size += 1;
 #endif
 }
 
@@ -4146,7 +4140,6 @@ static void __init reserve_ion_memory(void)
 static void __init msm7x30_calculate_reserve_sizes(void)
 {
 	size_pmem_devices();
-	reserve_pmem_memory();
 	size_ion_devices();
 	reserve_ion_memory();
 }
