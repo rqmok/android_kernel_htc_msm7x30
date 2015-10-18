@@ -2640,11 +2640,10 @@ static struct platform_device msm_migrate_pages_device = {
 	.id     = -1,
 };
 
+#ifdef CONFIG_ANDROID_PMEM_ION_WRAPPER
 static struct android_pmem_platform_data android_pmem_adsp_pdata = {
 	.name = "pmem_adsp",
-	.allocator_type = PMEM_ALLOCATORTYPE_BITMAP,
-	.cached = 1,
-	.memory_type = MEMTYPE_EBI0,
+	.ion_heap_id = ION_CP_MM_HEAP_ID,
 };
 
 static struct platform_device android_pmem_adsp_device = {
@@ -2652,6 +2651,7 @@ static struct platform_device android_pmem_adsp_device = {
 	.id = 0,
 	.dev = { .platform_data = &android_pmem_adsp_pdata },
 };
+#endif
 
 #if defined(CONFIG_CRYPTO_DEV_QCRYPTO) || \
 		defined(CONFIG_CRYPTO_DEV_QCRYPTO_MODULE) || \
@@ -3183,7 +3183,9 @@ static struct platform_device *devices[] __initdata = {
 #ifdef CONFIG_MSM_ROTATOR
         &msm_rotator_device,
 #endif
+#ifdef CONFIG_ANDROID_PMEM_ION_WRAPPER
         &android_pmem_adsp_device,
+#endif
         &msm_device_i2c,
         &msm_device_i2c_2,
         &hs_device,
@@ -4110,19 +4112,9 @@ static struct memtype_reserve msm7x30_reserve_table[] __initdata = {
 };
 
 
-
-static void __init size_pmem_devices(void)
-{
-#ifdef CONFIG_ANDROID_PMEM
-	android_pmem_adsp_pdata.start = MSM_PMEM_ADSP_BASE;
-	android_pmem_adsp_pdata.size = MSM_PMEM_ADSP_SIZE;
-#endif
-}
-
 static void __init size_ion_devices(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
-	ion_pdata.heaps[1].base = MSM_PMEM_ADSP_BASE;
 	ion_pdata.heaps[1].size = MSM_ION_MM_SIZE;
 	ion_pdata.heaps[2].size = MSM_ION_SF_SIZE;
 #endif
@@ -4131,6 +4123,7 @@ static void __init size_ion_devices(void)
 static void __init reserve_ion_memory(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
+	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_MM_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_SF_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += 1;
 #endif
@@ -4139,7 +4132,6 @@ static void __init reserve_ion_memory(void)
 
 static void __init msm7x30_calculate_reserve_sizes(void)
 {
-	size_pmem_devices();
 	size_ion_devices();
 	reserve_ion_memory();
 }
