@@ -15,6 +15,7 @@
 #define __ARCH_ARM_MACH_MSM_BOARD_PRIMOU_H
 
 #include <mach/board.h>
+#include <mach/msm_memtypes.h>
 
 #define PRIMOU_GPIO_UART2_RX 	51
 #define PRIMOU_GPIO_UART2_TX 	52
@@ -35,16 +36,25 @@
 #define MSM_PMEM_ADSP_SIZE		0x01E00000
 #endif
 
+
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MSM_FB_SIZE   (800 * 480 * 4 * 3) /* 4bpp * 3 Pages */
 #else
 #define MSM_FB_SIZE   (800 * 480 * 4 * 2) /* 4bpp * 2 Pages */
 #endif
 
+#ifdef CONFIG_FB_MSM_OVERLAY0_WRITEBACK
+/* width x height x 3 bpp x 2 frame buffer */
+#define MSM_FB_OVERLAY0_WRITEBACK_SIZE roundup((800 * 480 * 3 * 2), 4096)
+#else
+#define MSM_FB_OVERLAY0_WRITEBACK_SIZE  0
+#endif
+
 #ifdef CONFIG_ION_MSM
 #define MSM_ION_MM_SIZE		0x01E00000
 #define MSM_ION_SF_SIZE		0x01700000
-#define MSM_ION_HEAP_NUM	3
+#define MSM_ION_WB_SIZE		MSM_FB_OVERLAY0_WRITEBACK_SIZE
+#define MSM_ION_HEAP_NUM	4
 #endif
 
 
@@ -183,5 +193,6 @@ int primou_init_keypad(void);
 int __init primou_wifi_init(void);
 
 /*primou and primouw will share one panel code */
+void primou_mdp_writeback(struct memtype_reserve *reserve_table);
 int __init primou_init_panel(void);
 #endif /* __ARCH_ARM_MACH_MSM_BOARD_PRIMOU_H */

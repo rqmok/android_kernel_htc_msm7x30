@@ -134,7 +134,7 @@ static int mddi_novatec_power(int on)
 
 static int msm_fb_mddi_sel_clk(u32 *clk_rate)
 {
-  *clk_rate *= 2;
+    *clk_rate *= 2;
 	return 0;
 }
 
@@ -148,8 +148,13 @@ static struct msm_panel_common_pdata mdp_pdata = {
 	.gpio = 30,
 	.mdp_max_clk = 192000000,
 	.mdp_rev = MDP_REV_40,
+	.mem_hid = BIT(ION_CP_WB_HEAP_ID),
 };
 
+void __init primou_mdp_writeback(struct memtype_reserve* reserve_table)
+{
+	mdp_pdata.ov0_wb_size = MSM_FB_OVERLAY0_WRITEBACK_SIZE;
+}
 
 int __init primou_init_panel(void)
 {
