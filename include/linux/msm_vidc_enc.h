@@ -467,6 +467,13 @@ struct venc_ioctl_msg{
 #define VEN_IOCTL_GET_PERF_LEVEL \
 	_IOR(VEN_IOCTLBASE_ENC, 53, struct venc_ioctl_msg)
 
+/*IOCTL params:SET: InputData - venc_poctype, OutputData - NULL.*/
+#define VEN_IOCTL_SET_PIC_ORDER_CNT_TYPE \
+	_IOW(VEN_IOCTLBASE_ENC, 66, struct venc_ioctl_msg)
+/*IOCTL params:GET: InputData - NULL, OutputData - venc_poctype.*/
+#define VEN_IOCTL_GET_PIC_ORDER_CNT_TYPE \
+	_IOR(VEN_IOCTLBASE_ENC, 67, struct venc_ioctl_msg)
+
 struct venc_switch{
 	unsigned char	status;
 };
@@ -623,6 +630,10 @@ struct venc_recon_buff_size{
 	int height;
 	int size;
 	int alignment;
+};
+
+struct venc_poctype {
+	unsigned long poc_type;
 };
 
 #endif /* _MSM_VIDC_ENC_H_ */
