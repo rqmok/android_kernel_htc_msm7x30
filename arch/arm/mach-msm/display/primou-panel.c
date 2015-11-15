@@ -71,6 +71,7 @@ static struct platform_device mddi_primouwvga_device = {
 
 static int mddi_novatec_power(int on)
 {
+
 	int rc;
 	unsigned config;
 
@@ -98,14 +99,10 @@ static int mddi_novatec_power(int on)
 			config = GPIO_CFG(PRIMOU_LCD_ID1, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_2MA);
 			rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 			vreg_enable(V_LCMIO_1V8);
-			msleep(3);
+			msleep(1);
 			vreg_enable(V_LCMIO_2V8);
-			msleep(5);
+			msleep(1);
 
-			gpio_set_value(PRIMOU_LCD_RSTz, 1);
-			msleep(1);
-			gpio_set_value(PRIMOU_LCD_RSTz, 0);
-			msleep(1);
 			gpio_set_value(PRIMOU_LCD_RSTz, 1);
 		}
 	} else {

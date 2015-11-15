@@ -49,7 +49,7 @@ struct nov_regs {
 
 struct nov_regs pro_lgd_init_seq[] = {
 	{0x1100, 0x00},
-	{REG_WAIT, 10},
+	{REG_WAIT, 5},
 	{0xf000, 0x55},
 	{0xf001, 0xaa},
 	{0xf002, 0x52},
@@ -495,7 +495,7 @@ struct nov_regs pro_lgd_init_seq[] = {
 	{0x5500, 0x03},
 	{0x5E00, 0x06},
 	{0x3500, 0x00},
-	{REG_WAIT, 50},
+	{REG_WAIT, 10},
 	{0x2900, 0x00},
 };
 
@@ -712,7 +712,7 @@ static int __init primouwvga_init(void)
 
 	panel_data->panel_info.lcd.rev = 2;
 	panel_data->panel_info.lcd.vsync_enable = TRUE;
-	panel_data->panel_info.lcd.refx100 = 5400;
+	panel_data->panel_info.lcd.refx100 = 6000;
 	panel_data->panel_info.lcd.v_back_porch = 20;
 	panel_data->panel_info.lcd.v_front_porch = 20;
 	panel_data->panel_info.lcd.v_pulse_width = 40;
