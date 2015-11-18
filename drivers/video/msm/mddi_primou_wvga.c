@@ -703,8 +703,8 @@ static int __init primouwvga_init(void)
 	panel_data->panel_info.wait_cycle = 0;
 	panel_data->panel_info.bpp = 24;
 	panel_data->panel_info.clk_rate = 192000000;
-	panel_data->panel_info.clk_min = 190000000;
-	panel_data->panel_info.clk_max = 200000000;
+	panel_data->panel_info.clk_min = 192000000;
+	panel_data->panel_info.clk_max = 192000000;
 	panel_data->panel_info.fb_num = 2;
 	panel_data->panel_info.bl_max = 255;
 	panel_data->panel_info.bl_min = 1;
