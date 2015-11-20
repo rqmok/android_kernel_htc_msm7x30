@@ -192,6 +192,59 @@ static int pmem_free(struct allocation_data *adata)
 	return 0;
 }
 
+static int pmem_connect(unsigned long fd, struct file *file)
+{
+	int put_needed;
+
+	struct allocation_data *adata = file->private_data;
+
+	struct file *src_file = fget_light(fd, &put_needed);
+	struct allocation_data *src_adata = src_file->private_data;
+
+
+	if (!file) {
+		pr_err("pmem: %s: NULL file pointer passed in, "
+			"bailing out!\n", __func__);
+		return -EINVAL;
+	}
+
+	if (!src_file) {
+		pr_err("pmem: %s: src file not found!\n", __func__);
+		return -EBADF;
+	}
+
+	if (src_file == file) { /* degenerative case, operator error */
+		pr_err("pmem: %s: src_file and passed in file are "
+			"the same; refusing to connect to self!\n", __func__);
+		return -EINVAL;
+	}
+
+	if (!is_pmem_file(src_file)) {
+		pr_err("pmem: %s: src file is not a pmem file!\n",
+			__func__);
+		return -EINVAL;
+	} else {
+
+		if (!src_adata) {
+			pr_err("pmem: %s: src file pointer has no"
+				"private data, bailing out!\n", __func__);
+			return -EINVAL;
+		}
+
+		if (!adata) {
+			pr_err("pmem: %s: passed in file "
+				"pointer has no private data, bailing"
+				" out!\n", __func__);
+			return -EINVAL;
+		}
+		adata->handle = src_adata->handle;
+
+		file->private_data = adata;
+	}
+
+	return 0;
+}
+
 int get_pmem_file(unsigned int fd, unsigned long *start, unsigned long *vstart,
 		  unsigned long *len, struct file **filep)
 {
@@ -403,7 +456,12 @@ static long pmem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		}
 		break;
 	case PMEM_CONNECT:
-		pr_debug("%s: Unsupported ioctl PMEM_CONNECT\n", __func__);
+		ret = pmem_connect(arg, file);
+		if (ret) {
+			pr_err("%s: Failed to pmem_connect ret=%d\n",
+				__func__, ret);
+			return ret;
+		}
 		break;
 	case PMEM_GET_TOTAL_SIZE:
 		pr_debug("%s: Unsupported ioctl PMEM_GET_TOTAL_SIZE\n", __func__);
