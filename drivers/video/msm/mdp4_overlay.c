@@ -43,6 +43,15 @@
 #include "msm_fb.h"
 #include "mdp4.h"
 
+#include <mach/panel_id.h>
+
+/* workaround for panels with wrong direction */
+#define MDP_PANEL_FLIP_XRES 480
+#define MDP_PANEL_FLIP_YRES 800
+#define MDP_PANEL_FLIP_UD true
+#define MDP_PANEL_FLIP_LR true
+
+
 #define VERSION_KEY_MASK	0xFFFFFF00
 
 struct mdp4_overlay_ctrl {
@@ -877,6 +886,7 @@ void mdp4_overlay_rgb_setup(struct mdp4_overlay_pipe *pipe)
 	uint32 curr, mask;
 	uint32 offset = 0;
 	int pnum;
+	uint32_t dst_newx = 0, dst_newy = 0;
 
 	pnum = pipe->pipe_num - OVERLAY_PIPE_RGB1; /* start from 0 */
 	rgb_base = MDP_BASE + MDP4_RGB_BASE;
@@ -903,6 +913,28 @@ void mdp4_overlay_rgb_setup(struct mdp4_overlay_pipe *pipe)
 #ifdef MDP4_IGC_LUT_ENABLE
 	pipe->op_mode |= MDP4_OP_IGC_LUT_EN;
 #endif
+
+	/* workaround for panels with wrong direction */
+	if (MDP_PANEL_FLIP_UD & (panel_type == PANEL_ID_PRIMO_SONY)) {
+		pipe->op_mode ^= MDP4_OP_FLIP_UD;
+
+		if (pipe->mixer_num == 0)
+			dst_newy = MDP_PANEL_FLIP_YRES - pipe->dst_y - pipe->dst_h;
+		else
+			dst_newy = MDP_PANEL_FLIP_YRES - pipe->dst_y - pipe->dst_h;
+		dst_xy = dst_newy << 16;
+	} else
+		dst_xy = pipe->dst_y << 16;
+
+	if (MDP_PANEL_FLIP_LR & (panel_type == PANEL_ID_PRIMO_SONY)) {
+		pipe->op_mode ^= MDP4_OP_FLIP_LR;
+		if (pipe->mixer_num == 0)
+			dst_newx = MDP_PANEL_FLIP_XRES - pipe->dst_x - pipe->dst_w;
+		else
+			dst_newx = MDP_PANEL_FLIP_XRES - pipe->dst_x - pipe->dst_w;
+		dst_xy |= dst_newx;
+	} else
+		dst_xy |= pipe->dst_x;
 
 	mdp4_scale_setup(pipe);
 
@@ -1035,6 +1067,7 @@ void mdp4_overlay_vg_setup(struct mdp4_overlay_pipe *pipe)
 	uint32 mask;
 	int pnum, ptype, i;
 	uint32_t block;
+	uint32_t dst_newx = 0, dst_newy = 0;
 
 	pnum = pipe->pipe_num - OVERLAY_PIPE_VG1; /* start from 0 */
 	vg_base = MDP_BASE + MDP4_VIDEO_BASE;
@@ -1091,6 +1124,28 @@ void mdp4_overlay_vg_setup(struct mdp4_overlay_pipe *pipe)
 #ifdef MDP4_IGC_LUT_ENABLE
 	pipe->op_mode |= MDP4_OP_IGC_LUT_EN;
 #endif
+
+	/* workaround for panels with wrong direction */
+	if (MDP_PANEL_FLIP_UD & (panel_type == PANEL_ID_PRIMO_SONY)) {
+		pipe->op_mode |= MDP4_OP_FLIP_UD;
+
+		if (pipe->mixer_num == 0)
+			dst_newy = MDP_PANEL_FLIP_YRES - pipe->dst_y - pipe->dst_h;
+		else
+			dst_newy = MDP_PANEL_FLIP_YRES - pipe->dst_y - pipe->dst_h;
+		dst_xy = dst_newy << 16;
+	} else
+		dst_xy = pipe->dst_y << 16;
+
+	if (MDP_PANEL_FLIP_LR & (panel_type == PANEL_ID_PRIMO_SONY)) {
+		pipe->op_mode |= MDP4_OP_FLIP_LR;
+		if (pipe->mixer_num == 0)
+			dst_newx = MDP_PANEL_FLIP_XRES - pipe->dst_x - pipe->dst_w;
+		else
+			dst_newx = MDP_PANEL_FLIP_XRES - pipe->dst_x - pipe->dst_w;
+		dst_xy |= dst_newx;
+	} else
+		dst_xy |= pipe->dst_x;
 
 	mdp4_scale_setup(pipe);
 
