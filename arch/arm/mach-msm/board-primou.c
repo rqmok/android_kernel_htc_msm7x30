@@ -4131,6 +4131,15 @@ static void __init size_pmem_devices(void)
 #endif
 }
 
+static void __init reserve_pmem_memory(void)
+{
+#ifdef CONFIG_ANDROID_PMEM
+#ifndef CONFIG_ANDROID_PMEM_ION_WRAPPER
+	msm7x30_reserve_table[MEMTYPE_EBI0].size += PMEM_KERNEL_EBI0_SIZE;
+#endif
+#endif
+}
+
 static void __init reserve_mdp_memory(void)
 {
 	primou_mdp_writeback(msm7x30_reserve_table);
@@ -4159,6 +4168,7 @@ static void __init reserve_ion_memory(void)
 static void __init msm7x30_calculate_reserve_sizes(void)
 {
 	size_pmem_devices();
+	reserve_pmem_memory();
 	size_ion_devices();
 	reserve_ion_memory();
 	reserve_mdp_memory();

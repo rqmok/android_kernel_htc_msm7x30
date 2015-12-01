@@ -37,6 +37,7 @@
 #define MSM_PMEM_ADSP_SIZE		0x01E00000
 #endif
 
+#define PMEM_KERNEL_EBI0_SIZE	0x00500000
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MSM_FB_SIZE   (800 * 480 * 4 * 3) /* 4bpp * 3 Pages */
