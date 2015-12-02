@@ -33,8 +33,6 @@
 #define write_client_reg(val, reg) mddi_queue_register_write(reg, val, TRUE, 0);
 
 extern int panel_type;
-/* use one flag to have better backlight on/off performance */
-static int primou_set_dim = 1;
 
 static struct mddi_panel_platform_data *pdata;
 static struct msm_fb_panel_data primouwvga_panel_data;
@@ -501,7 +499,7 @@ struct nov_regs pro_lgd_init_seq[] = {
 
 static struct nov_regs sony_init_seq[] = {
 	{0x1100, 0x00},
-	{REG_WAIT, 120},
+	{REG_WAIT, 20},
 	{0xF000, 0x55},
 	{0xF001, 0xaa},
 	{0xF002, 0x52},
@@ -559,7 +557,7 @@ static struct nov_regs sony_init_seq[] = {
 	{0x4400, 0x01},
 	{0x4401, 0xB3},
 	{0x2900, 0x00},
-	{REG_WAIT, 40},
+	{REG_WAIT, 10},
 	{0x5500, 0x03},
 	{0x5E00, 0x06},
 	{0x5300, 0x24},
@@ -613,7 +611,7 @@ static int mddi_primou_panel_on(struct platform_device *pdev)
 	}
 
 	/* Set CABC values */
-	write_client_reg(0x2C, 0x5300);
+	//write_client_reg(0x2C, 0x5300);
 
     return 0;
 }
@@ -629,7 +627,7 @@ static int mddi_primou_panel_off(struct platform_device *pdev)
 	} else {
 		write_client_reg(0x0, 0x5300);
 		write_client_reg(0, 0x2800);
-		msleep(10);
+		msleep(5);
 		write_client_reg(0, 0x1000);
 	}
 
@@ -713,9 +711,15 @@ static int __init primouwvga_init(void)
 	panel_data->panel_info.lcd.rev = 2;
 	panel_data->panel_info.lcd.vsync_enable = TRUE;
 	panel_data->panel_info.lcd.refx100 = 6000;
-	panel_data->panel_info.lcd.v_back_porch = 20;
-	panel_data->panel_info.lcd.v_front_porch = 20;
-	panel_data->panel_info.lcd.v_pulse_width = 40;
+	if (panel_type == PANEL_ID_PRIMO_SONY) {
+		panel_data->panel_info.lcd.v_back_porch = 4;
+		panel_data->panel_info.lcd.v_front_porch = 2;
+		panel_data->panel_info.lcd.v_pulse_width = 4;
+	} else {
+		panel_data->panel_info.lcd.v_back_porch = 20;
+		panel_data->panel_info.lcd.v_front_porch = 20;
+		panel_data->panel_info.lcd.v_pulse_width = 40;
+	}
 	panel_data->panel_info.lcd.hw_vsync_mode = TRUE;
 	panel_data->panel_info.lcd.vsync_notifier_period = 0;
 
