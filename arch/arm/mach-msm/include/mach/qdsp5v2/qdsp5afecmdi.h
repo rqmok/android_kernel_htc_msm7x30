@@ -92,6 +92,7 @@ struct afe_cmd_fm_volume_config{
 } __attribute__ ((packed));
 
 #define AFE_CMD_LOOPBACK	0xD
+#define AFE_CMD_EXT_LOOPBACK	0xE
 #define AFE_CMD_LOOPBACK_LEN sizeof(struct afe_cmd_loopback)
 #define AFE_LOOPBACK_ENABLE_COMMAND 0xFFFF
 #define AFE_LOOPBACK_DISABLE_COMMAND 0x0000
@@ -101,5 +102,14 @@ struct afe_cmd_loopback {
 	uint16_t enable_flag;
 	uint16_t reserved[2];
 } __attribute__ ((packed));
+
+struct afe_cmd_ext_loopback {
+	uint16_t cmd_id;
+	uint16_t enable_flag;
+	uint16_t source_id;
+	uint16_t dst_id;
+	uint16_t reserved[2];
+} __packed;
+
 
 #endif

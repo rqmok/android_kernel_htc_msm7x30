@@ -101,6 +101,60 @@ static void afe_dsp_codec_config(struct msm_afe_state *afe,
 	afe_send_queue(afe, &cmd, sizeof(cmd));
 }
 
+/* Function is called after afe module been enabled */
+void afe_loopback(int enable)
+{
+	struct afe_cmd_loopback cmd;
+	struct msm_afe_state *afe;
+
+	afe = &the_afe_state;
+	MM_DBG("enable %d\n", enable);
+	memset(&cmd, 0, sizeof(cmd));
+	cmd.cmd_id = AFE_CMD_LOOPBACK;
+	if (enable)
+		cmd.enable_flag = AFE_LOOPBACK_ENABLE_COMMAND;
+
+	afe_send_queue(afe, &cmd, sizeof(cmd));
+}
+EXPORT_SYMBOL(afe_loopback);
+
+void afe_ext_loopback(int enable, int rx_copp_id, int tx_copp_id)
+{
+	struct afe_cmd_ext_loopback cmd;
+	struct msm_afe_state *afe;
+
+	afe = &the_afe_state;
+	MM_DBG("enable %d\n", enable);
+	if ((rx_copp_id == 0) && (tx_copp_id == 0)) {
+		afe_loopback(enable);
+	} else {
+		memset(&cmd, 0, sizeof(cmd));
+		cmd.cmd_id = AFE_CMD_EXT_LOOPBACK;
+		cmd.source_id = tx_copp_id;
+		cmd.dst_id = rx_copp_id;
+		if (enable)
+			cmd.enable_flag = AFE_LOOPBACK_ENABLE_COMMAND;
+
+		afe_send_queue(afe, &cmd, sizeof(cmd));
+	}
+}
+EXPORT_SYMBOL(afe_ext_loopback);
+
+void afe_device_volume_ctrl(u16 device_id, u16 device_volume)
+{
+	struct afe_cmd_device_volume_ctrl cmd;
+	struct msm_afe_state *afe;
+
+	afe = &the_afe_state;
+	MM_DBG("device 0x%4x volume 0x%4x\n", device_id, device_volume);
+	memset(&cmd, 0, sizeof(cmd));
+	cmd.cmd_id = AFE_CMD_DEVICE_VOLUME_CTRL;
+	cmd.device_id = device_id;
+	cmd.device_volume = device_volume;
+	afe_send_queue(afe, &cmd, sizeof(cmd));
+}
+EXPORT_SYMBOL(afe_device_volume_ctrl);
+
 int afe_enable(u8 path_id, struct msm_afe_config *config)
 {
 	struct msm_afe_state *afe = &the_afe_state;
