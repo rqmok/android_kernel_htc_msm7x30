@@ -4086,14 +4086,6 @@ struct ion_platform_heap msm7x30_heaps[] = {
 			.memory_type = ION_EBI_TYPE,
 			.extra_data = (void *)&co_ion_pdata,
 		},
-		/* WB */
-		{
-			.id	= ION_CP_WB_HEAP_ID,
-			.type	= ION_HEAP_TYPE_CARVEOUT,
-			.name	= ION_WB_HEAP_NAME,
-			.memory_type = ION_EBI_TYPE,
-			.extra_data = (void *)&co_ion_pdata,
-		},
 #endif
 
 };
@@ -4140,18 +4132,12 @@ static void __init reserve_pmem_memory(void)
 #endif
 }
 
-static void __init reserve_mdp_memory(void)
-{
-	primou_mdp_writeback(msm7x30_reserve_table);
-}
-
 static void __init size_ion_devices(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
 	ion_pdata.heaps[1].base = MSM_PMEM_ADSP_BASE;
 	ion_pdata.heaps[1].size = MSM_ION_MM_SIZE;
 	ion_pdata.heaps[2].size = MSM_ION_SF_SIZE;
-	ion_pdata.heaps[3].size = MSM_ION_WB_SIZE;
 #endif
 }
 
@@ -4159,7 +4145,6 @@ static void __init reserve_ion_memory(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_SF_SIZE;
-	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_WB_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += 1;
 #endif
 }
@@ -4171,7 +4156,6 @@ static void __init msm7x30_calculate_reserve_sizes(void)
 	reserve_pmem_memory();
 	size_ion_devices();
 	reserve_ion_memory();
-	reserve_mdp_memory();
 }
 
 static int msm7x30_paddr_to_memtype(unsigned int paddr)
