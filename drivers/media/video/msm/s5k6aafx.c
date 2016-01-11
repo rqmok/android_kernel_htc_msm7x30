@@ -754,13 +754,10 @@ static int s5k6aafx_set_metering_mode(enum aec_metering_mode metering_value)
 {
 	uint16_t weight_table[32];
 	uint8_t i;
-
 	if (op_mode == SENSOR_SNAPSHOT_MODE)
 		return 0;
-
 	for (i = 0; i < 32; i++)
 		weight_table[i] = 0x0101;
-
 	if (metering_value == CAMERA_METERING_CENTERING) {
 		weight_table[9] = 0x0303;
 		weight_table[10] = 0x0303;
@@ -782,19 +779,16 @@ static int s5k6aafx_set_metering_mode(enum aec_metering_mode metering_value)
 		weight_table[i] = 0x0505;
 		weight_table[i+4] = 0x0505;
 	}
-
 	s5k6aafx_i2c_write(s5k6aafx_client->addr,
 		S5K6AAFX_REG_I2C_MODE, S5K6AAFX_I2C_MODE_GENERAL);
 	s5k6aafx_i2c_write(s5k6aafx_client->addr,
 		S5K6AAFX_REG_W_ADDH, S5K6AAFX_ADDH_SW_REG_INT);
 	s5k6aafx_i2c_write(s5k6aafx_client->addr, S5K6AAFX_REG_W_ADDL, 0x100E);
-
 	for (i = 0; i < 32; i++) {
 		CDBG("write table[%d]=%x\n", i, weight_table[i]);
 		s5k6aafx_i2c_write(s5k6aafx_client->addr,
 			S5K6AAFX_REG_WR, weight_table[i]);
 	}
-
 	return 0;
 }
 #endif

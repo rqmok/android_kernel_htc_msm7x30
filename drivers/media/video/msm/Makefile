@@ -55,7 +55,9 @@ obj-$(CONFIG_S5K4E1GX) += s5k4e1gx.o s5k4e1gx_reg.o
 endif
 
 ifdef CONFIG_S5K6AAFX
-obj-$(CONFIG_MACH_FLYER) += s5k6aafx.o s5k6aafx_reg_flyer.o s5k6aafx_reg_flyer_cob.o
+obj-$(CONFIG_S5K6AAFX) += s5k6aafx.o
+obj-$(CONFIG_MACH_FLYER) += s5k6aafx_reg_flyer.o s5k6aafx_reg_flyer_cob.o
+obj-$(CONFIG_MACH_VIVO) += s5k6aafx_reg_vivo.o
 endif
 obj-$(CONFIG_MSM_V4L2_VIDEO_OVERLAY_DEVICE) += msm_v4l2_video.o
 

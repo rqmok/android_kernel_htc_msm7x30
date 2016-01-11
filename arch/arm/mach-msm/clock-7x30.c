@@ -2746,7 +2746,7 @@ static struct clk_local_ownership {
 	const u32 bit;
 	struct clk *remote;
 } ownership_map[] __initdata = {
-#ifdef CONFIG_MACH_PRIMOU
+#ifdef CONFIG_MACH_VIVO
 	/* Sources */
 	{ CLK_LOOKUP("pll1_clk",	pll1_clk.c,	"acpu") },
 	{ CLK_LOOKUP("pll2_clk",	pll2_clk.c,	"acpu") },

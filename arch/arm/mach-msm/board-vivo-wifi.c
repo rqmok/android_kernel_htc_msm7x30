@@ -1,4 +1,4 @@
-/* linux/arch/arm/mach-msm/board-vivo-wifi.c
+/* linux/arch/arm/mach-msm/board-msm7x30-wifi.c
 */
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -9,17 +9,15 @@
 #include <asm/gpio.h>
 #include <asm/io.h>
 #include <linux/skbuff.h>
-#ifdef CONFIG_BCM4329_PURE_ANDROID
 #include <linux/wlan_plat.h>
-#else
-#include <linux/wifi_tiwlan.h>
-#endif
 
 #include "board-vivo.h"
 
-int vivo_wifi_power(int on);
-int vivo_wifi_reset(int on);
-int vivo_wifi_set_carddetect(int on);
+#define BOARD_GPIO_WIFI_IRQ	147
+
+int msm7x30_wifi_power(int on);
+int msm7x30_wifi_reset(int on);
+int msm7x30_wifi_set_carddetect(int on);
 
 #define PREALLOC_WLAN_NUMBER_OF_SECTIONS	4
 #define PREALLOC_WLAN_NUMBER_OF_BUFFERS		160
@@ -46,7 +44,7 @@ static wifi_mem_prealloc_t wifi_mem_array[PREALLOC_WLAN_NUMBER_OF_SECTIONS] = {
 	{ NULL, (WLAN_SECTION_SIZE_3 + PREALLOC_WLAN_SECTION_HEADER) }
 };
 
-static void *vivo_wifi_mem_prealloc(int section, unsigned long size)
+static void *msm7x30_wifi_mem_prealloc(int section, unsigned long size)
 {
 	if (section == PREALLOC_WLAN_NUMBER_OF_SECTIONS)
 		return wlan_static_skb;
@@ -57,7 +55,7 @@ static void *vivo_wifi_mem_prealloc(int section, unsigned long size)
 	return wifi_mem_array[section].mem_ptr;
 }
 
-int __init vivo_init_wifi_mem(void)
+int __init msm7x30_init_wifi_mem(void)
 {
 	int i;
 
@@ -76,42 +74,35 @@ int __init vivo_init_wifi_mem(void)
 	return 0;
 }
 
-static struct resource vivo_wifi_resources[] = {
+static struct resource msm7x30_wifi_resources[] = {
 	[0] = {
 		.name		= "bcm4329_wlan_irq",
-		.start		= MSM_GPIO_TO_INT(VIVO_GPIO_WIFI_IRQ),
-		.end		= MSM_GPIO_TO_INT(VIVO_GPIO_WIFI_IRQ),
-#ifdef CONFIG_BCM4329_PURE_ANDROID
-		.flags		= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL | IORESOURCE_IRQ_SHAREABLE,
-#else
-		.flags          = IORESOURCE_IRQ | IORESOURCE_IRQ_LOWEDGE,
-#endif
+		.start		= MSM_GPIO_TO_INT(BOARD_GPIO_WIFI_IRQ),
+		.end		= MSM_GPIO_TO_INT(BOARD_GPIO_WIFI_IRQ),
+		.flags          = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL | IORESOURCE_IRQ_SHAREABLE,
 	},
 };
 
-static struct wifi_platform_data vivo_wifi_control = {
-	.set_power      = vivo_wifi_power,
-	.set_reset      = vivo_wifi_reset,
-	.set_carddetect = vivo_wifi_set_carddetect,
-	.mem_prealloc   = vivo_wifi_mem_prealloc,
-#ifndef CONFIG_BCM4329_PURE_ANDROID
-	.dot11n_enable  = 1,
-#endif
+static struct wifi_platform_data msm7x30_wifi_control = {
+	.set_power      = msm7x30_wifi_power,
+	.set_reset      = msm7x30_wifi_reset,
+	.set_carddetect = msm7x30_wifi_set_carddetect,
+	.mem_prealloc   = msm7x30_wifi_mem_prealloc,
 };
 
-static struct platform_device vivo_wifi_device = {
+static struct platform_device msm7x30_wifi_device = {
         .name           = "bcm4329_wlan",
         .id             = 1,
-        .num_resources  = ARRAY_SIZE(vivo_wifi_resources),
-        .resource       = vivo_wifi_resources,
+        .num_resources  = ARRAY_SIZE(msm7x30_wifi_resources),
+        .resource       = msm7x30_wifi_resources,
         .dev            = {
-                .platform_data = &vivo_wifi_control,
+                .platform_data = &msm7x30_wifi_control,
         },
 };
 
 extern unsigned char *get_wifi_nvs_ram(void);
 
-static unsigned vivo_wifi_update_nvs(char *str)
+static unsigned msm7x30_wifi_update_nvs(char *str)
 {
 #define NVS_LEN_OFFSET		0x0C
 #define NVS_DATA_OFFSET		0x40
@@ -139,11 +130,10 @@ int __init vivo_wifi_init(void)
 	int ret;
 
 	printk(KERN_INFO "%s: start\n", __func__);
-	vivo_wifi_update_nvs("sd_oobonly=1\n");
-	vivo_wifi_update_nvs("btc_params80=0\n");
-	vivo_wifi_update_nvs("btc_params6=30\n");
-	vivo_wifi_update_nvs("btc_params70=0x32\n");
-	vivo_init_wifi_mem();
-	ret = platform_device_register(&vivo_wifi_device);
+	msm7x30_wifi_update_nvs("sd_oobonly=1\n");
+	msm7x30_wifi_update_nvs("btc_params80=0\n");
+	msm7x30_wifi_update_nvs("btc_params6=30\n");
+	msm7x30_init_wifi_mem();
+	ret = platform_device_register(&msm7x30_wifi_device);
 	return ret;
 }
