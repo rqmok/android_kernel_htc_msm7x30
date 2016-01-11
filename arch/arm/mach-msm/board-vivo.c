@@ -467,6 +467,32 @@ static int pm8058_gpios_init(void)
 			.function       = PM_GPIO_FUNC_NORMAL,
 		}
 	};
+	
+	struct pm8xxx_gpio_init_info psensor_gpio_LS_EN= {
+		PM8058_GPIO_PM_TO_SYS(VIVO_GPIO_LS_EN),
+	{
+			.direction      = PM_GPIO_DIR_OUT,
+			.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
+			.output_value   = 0,
+			.pull           = PM_GPIO_PULL_NO,
+			.vin_sel        = PM8058_GPIO_VIN_L5,
+			.out_strength   = PM_GPIO_STRENGTH_HIGH,
+			.function       = PM_GPIO_FUNC_NORMAL,
+		}
+	};
+	
+	struct pm8xxx_gpio_init_info psensor_gpio_en = {
+		PM8058_GPIO_PM_TO_SYS(VIVO_GPIO_PS_EN),
+		{
+			.direction      = PM_GPIO_DIR_OUT,
+			.output_buffer  = PM_GPIO_OUT_BUF_CMOS,
+			.output_value   = 0,
+			.pull           = PM_GPIO_PULL_NO,
+			.vin_sel        = PM8058_GPIO_VIN_L5,
+			.out_strength   = PM_GPIO_STRENGTH_HIGH,
+			.function       = PM_GPIO_FUNC_NORMAL,
+		}
+	};
 
 	struct pm8xxx_gpio_init_info gpio24 = {
 		PM8058_GPIO_PM_TO_SYS(VIVO_GREEN_LED),
@@ -561,6 +587,20 @@ static int pm8058_gpios_init(void)
 		pr_err("%s PMIC_GPIO_PS_INT_N config failed\n", __func__);
 		return rc;
 	}
+
+	rc = pm8xxx_gpio_config(psensor_gpio_LS_EN.gpio, &psensor_gpio_LS_EN.config);
+	if (rc) {
+		pr_err("%s VIVO_GPIO_LS_EN config failed\n", __func__);
+		return rc;
+	} else
+		pr_info("%s [cm3628][PS]VIVO_GPIO_LS_EN config ok\n", __func__);
+
+	rc = pm8xxx_gpio_config(psensor_gpio_en.gpio, &psensor_gpio_en.config);
+	if (rc) {
+		pr_err("%s VIVO_GPIO_PS_EN config failed\n", __func__);
+		return rc;
+	} else
+		pr_info("%s [cm3628][PS]VIVO_GPIO_PS_EN config ok\n", __func__);
 
 	rc = pm8xxx_gpio_config(gpio24.gpio, &gpio24.config);
 	if (rc) {

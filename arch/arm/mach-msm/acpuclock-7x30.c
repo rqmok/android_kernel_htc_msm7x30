@@ -57,7 +57,7 @@
 #ifdef CONFIG_MACH_SAGA
 #define MAX_AXI_KHZ 192000
 #endif 
-#ifdef CONFIG_MACH_PRIMOU
+#ifdef CONFIG_MACH_VIVO
 #define MAX_AXI_KHZ 192000
 #else
 #define MAX_AXI_KHZ 201600
@@ -114,7 +114,7 @@ static struct pll pll2_tbl[] = {
 	{  98, 1, 3, 0 }, /* 1900 MHz */
 	{ 103, 1, 3, 0 }, /* 2016 MHz */
 #endif
-#ifdef CONFIG_MACH_PRIMOU
+#ifdef CONFIG_MACH_VIVO
 	{  42, 0, 1, 0 }, /*  806 MHz */
 	{  53, 1, 3, 0 }, /* 1024 MHz */
 	{ 125, 0, 1, 1 }, /* 1200 MHz */
@@ -181,7 +181,7 @@ static struct clkctl_acpu_speed acpu_freq_tbl[] = {
 	{ 1, 1920000, PLL_2, 3, 0, 192000000, 1450, VDD_RAW(1450), &pll2_tbl[12]},
 	{ 1, 2016000, PLL_2, 3, 0, 192000000, 1500, VDD_RAW(1500), &pll2_tbl[13]},
 #endif
-#ifdef CONFIG_MACH_PRIMOU
+#ifdef CONFIG_MACH_VIVO
 	{ 0, 24576,  LPXO, 0, 0,  30720000,  1000, VDD_RAW(1000) },
 	{ 0, 61440,  PLL_3,    5, 11, 61440000,  1000, VDD_RAW(1000) },
 	{ 0, 122880, PLL_3,    5, 5,  61440000,  1000, VDD_RAW(1000) },
