@@ -1226,7 +1226,7 @@ struct resource msm_camera_resources[] = {
 	},
 };
 
-#ifdef CONFIG_FLASHLIGHT_AAT
+#ifdef CONFIG_FLASHLIGHT_AAT1271
 static void config_vivo_flashlight_gpios(void)
 {
 	uint32_t fl_gpio_table[] = {
@@ -1305,7 +1305,7 @@ static void vivo_seccam_clk_switch(void){
 
 static int flashlight_control(int mode)
 {
-#ifdef CONFIG_FLASHLIGHT_AAT
+#ifdef CONFIG_FLASHLIGHT_AAT1271
 	return aat1271_flashlight_control(mode);
 #else
 	return 0;
@@ -3306,7 +3306,7 @@ static struct platform_device *devices[] __initdata = {
 #ifdef CONFIG_BT
 	&vivo_rfkill,
 #endif
-#ifdef CONFIG_FLASHLIGHT_AAT
+#ifdef CONFIG_FLASHLIGHT_AAT1271
 	&vivo_flashlight_device,
 #endif
 	&cable_detect_device,
