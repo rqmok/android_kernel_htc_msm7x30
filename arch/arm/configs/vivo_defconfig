@@ -1296,7 +1296,7 @@ CONFIG_WLAN=y
 CONFIG_BCMDHD_GOOGLE=y
 # CONFIG_ATH_COMMON is not set
 # CONFIG_BCM4329 is not set
-CONFIG_BCMDHD=m
+CONFIG_BCMDHD=y
 CONFIG_BCMDHD_FW_PATH="/system/vendor/firmware/fw_bcmdhd.bin"
 CONFIG_BCMDHD_NVRAM_PATH="/proc/calibration"
 # CONFIG_BCMDHD_P2P_INTERFACE is not set
