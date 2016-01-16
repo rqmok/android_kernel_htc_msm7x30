@@ -348,46 +348,54 @@ static struct bma150_platform_data gsensor_platform_data = {
 	.chip_layout = 1,
 };
 
-static int pl_sensor_power_enable(char *power, unsigned volt)
+static DEFINE_MUTEX(capella_cm3628_lock);
+static int als_power_control;
+static int __capella_cm3628_power(int on)
 {
-	struct vreg *vreg_gp;
 	int rc;
+	struct vreg *vreg = vreg_get(0, "gp7");
 
-	if (power == NULL)
-		return EIO;
+	if (!vreg) {
+		printk(KERN_ERR "%s: vreg error\n", __func__);
+		return -EIO;
+	}
+	rc = vreg_set_level(vreg, 2850);
 
-	vreg_gp = vreg_get(NULL, power);
-	if (IS_ERR(vreg_gp)) {
-		pr_err("[cm3628 err][ps] %s: vreg_get(%s) failed (%ld)\n",
-			__func__, power, PTR_ERR(vreg_gp));
-		return EIO;
+	printk(KERN_DEBUG "%s: Turn the capella_cm3628 power %s\n",
+		__func__, (on) ? "on" : "off");
+
+	if (on) {
+		rc = vreg_enable(vreg);
+		if (rc < 0)
+			printk(KERN_ERR "%s: vreg enable failed\n", __func__);
+	} else {
+		rc = vreg_disable(vreg);
+		if (rc < 0)
+			printk(KERN_ERR "%s: vreg disable failed\n", __func__);
 	}
 
-	rc = vreg_set_level(vreg_gp, volt);
-	if (rc) {
-		pr_err("[cm3628 err][ps] %s: vreg wlan set %s level failed (%d)\n",
-			__func__, power, rc);
-		return EIO;
-	}
-
-	rc = vreg_enable(vreg_gp);
-	if (rc) {
-		pr_err("[cm3628 err][ps] %s: vreg enable %s failed (%d)\n",
-			__func__, power, rc);
-		return EIO;
-	}
 	return rc;
 }
+
 static int capella_cm3628_power(int pwr_device, uint8_t enable)
 {
-	int ret = 0;
+	unsigned int old_status = 0;
+	int ret = 0, on = 0;
+	mutex_lock(&capella_cm3628_lock);
 
-	printk(KERN_INFO "%s: system_rev %d\n", __func__, system_rev);
-	if (system_rev <= 1)/*XB*/
-		ret = pl_sensor_power_enable("gp7", 2850);
+	old_status = als_power_control;
+	if (enable)
+		als_power_control |= pwr_device;
 	else
-		ret = pl_sensor_power_enable("gp4", 2850);
+		als_power_control &= ~pwr_device;
 
+	on = als_power_control ? 1 : 0;
+	if (old_status == 0 && on)
+		ret = __capella_cm3628_power(1);
+	else if (!on)
+		ret = __capella_cm3628_power(0);
+
+	mutex_unlock(&capella_cm3628_lock);
 	return ret;
 }
 
