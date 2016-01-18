@@ -17,8 +17,6 @@
  * Author: Paul Reioux (reioux@gmail.com) Modified for intelliactive
  */
 
-#define DEBUG false
-
 #include <linux/cpu.h>
 #include <linux/cpumask.h>
 #include <linux/cpufreq.h>
@@ -1265,18 +1263,14 @@ static void interactive_input_event(struct input_handle *handle,
 		boostpulse_endtime = ktime_to_us(ktime_get()) +
 			boostpulse_duration_val;
 		cpufreq_interactive_boost();
-		if (DEBUG)
-			printk(KERN_INFO "intelliactive: cpufreq input boosted\n");
 	}
 }
 
 static int input_dev_filter(const char *input_dev_name)
 {
-	if (DEBUG)
-		printk(KERN_INFO "intelliactive: input dev name=%s\n", input_dev_name);
 	if (strstr(input_dev_name, "touchscreen") ||
-	    strstr(input_dev_name, "atmel-touchscreen") ||
-	    strstr(input_dev_name, "synaptics-rmi-touchscreen") ||
+	    strstr(input_dev_name, "atmel_qt602240") ||
+	    strstr(input_dev_name, "Synaptics_3K") ||
 	    strstr(input_dev_name, "touch_dev") ||
 	    strstr(input_dev_name, "sec-touchscreen") ||
 	    strstr(input_dev_name, "keypad")) {
@@ -1293,11 +1287,8 @@ static int interactive_input_connect(struct input_handler *handler,
 	struct input_handle *handle;
 	int error;
 
-	if (input_dev_filter(dev->name)) {
-		if (DEBUG)
-			printk(KERN_INFO "intelliactive: no match for input device (%s)\n", dev->name);
+	if (input_dev_filter(dev->name))
 		return -ENODEV;
-	}
 
 	handle = kzalloc(sizeof(struct input_handle), GFP_KERNEL);
 	if (!handle)
