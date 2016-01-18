@@ -162,6 +162,21 @@ unsigned int vivo_get_engineerid(void)
 	return engineerid;
 }
 
+
+#define GPIO_INPUT      0
+#define GPIO_OUTPUT     1
+
+#define GPIO_NO_PULL    0
+#define GPIO_PULL_DOWN  1
+#define GPIO_PULL_UP    3
+
+#define PCOM_GPIO_CFG(gpio, func, dir, pull, drvstr) \
+		((((gpio) & 0x3FF) << 4)        | \
+		((func) & 0xf)                  | \
+		(((dir) & 0x1) << 14)           | \
+		(((pull) & 0x3) << 15)          | \
+		(((drvstr) & 0xF) << 17))
+
 static int vivo_ts_power(int on)
 {
 	pr_info("[TP]%s: power %d\n", __func__, on);
@@ -1423,14 +1438,19 @@ static struct platform_device msm_vpe_device = {
 };
 #endif
 
-#endif /*CONFIG_MSM_CAMERA*/
-
 #ifdef CONFIG_MSM7KV2_AUDIO
+
+
+
+static struct tpa2051d3_platform_data tpa2051d3_platform_data = {
+	//.gpio_tpa2051_spk_en = VIVO_AUD_SPK_SD,
+};
+
 static unsigned aux_pcm_gpio_off[] = {
-	GPIO_CFG(138, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_DOUT */
-	GPIO_CFG(139, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_DIN  */
-	GPIO_CFG(140, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_SYNC */
-	GPIO_CFG(141, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_CLK  */
+	PCOM_GPIO_CFG(138, 0, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_DOUT */
+	PCOM_GPIO_CFG(139, 0, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_DIN  */
+	PCOM_GPIO_CFG(140, 0, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_SYNC */
+	PCOM_GPIO_CFG(141, 0, GPIO_INPUT, GPIO_PULL_DOWN, GPIO_CFG_2MA),   /* PCM_CLK  */
 };
 
 static void __init aux_pcm_gpio_init(void)
@@ -1566,6 +1586,8 @@ int mi2s_unconfig_clk_gpio(void)
 
 #endif /* CONFIG_MSM7KV2_AUDIO */
 
+#endif /*CONFIG_MSM_CAMERA*/
+
 static int __init buses_init(void)
 {
 	if (gpio_tlmm_config(GPIO_CFG(VIVO_PMIC_GPIO_INT, 1, GPIO_CFG_INPUT,
@@ -1581,6 +1603,7 @@ static int __init buses_init(void)
 	return 0;
 }
 
+
 #define TIMPANI_RESET_GPIO	1
 
 struct bahama_config_register{
@@ -1595,7 +1618,88 @@ enum version{
 	VER_UNSUPPORTED = 0xFF
 };
 
+
+/*static struct vreg *vreg_marimba_1;*/
 static struct vreg *vreg_marimba_2;
+
+#if 0
+static struct msm_gpio timpani_reset_gpio_cfg[] = {
+{ GPIO_CFG(TIMPANI_RESET_GPIO, 0, GPIO_CFG_OUTPUT,
+	GPIO_CFG_NO_PULL, GPIO_CFG_2MA), "timpani_reset"} };
+static int config_timpani_reset(void)
+{
+	int rc;
+	rc = msm_gpios_request_enable(timpani_reset_gpio_cfg,
+				ARRAY_SIZE(timpani_reset_gpio_cfg));
+	if (rc < 0) {
+		printk(KERN_ERR
+			"%s: msm_gpios_request_enable failed (%d)\n",
+				__func__, rc);
+	}
+	return rc;
+}
+static unsigned int msm_timpani_setup_power(void)
+{
+	int rc;
+	rc = config_timpani_reset();
+	if (rc < 0)
+		goto out;
+#if 0
+	rc = vreg_enable(vreg_marimba_1);
+	if (rc) {
+		printk(KERN_ERR "%s: vreg_enable() = %d\n",
+					__func__, rc);
+		goto out;
+	}
+#endif
+	rc = vreg_enable(vreg_marimba_2);
+	if (rc) {
+		printk(KERN_ERR "%s: vreg_enable() = %d\n",
+					__func__, rc);
+	/*	goto fail_disable_vreg_marimba_1; */
+	}
+	rc = gpio_direction_output(TIMPANI_RESET_GPIO, 1);
+	if (rc < 0) {
+		printk(KERN_ERR
+			"%s: gpio_direction_output failed (%d)\n",
+				__func__, rc);
+		msm_gpios_free(timpani_reset_gpio_cfg,
+				ARRAY_SIZE(timpani_reset_gpio_cfg));
+		vreg_disable(vreg_marimba_2);
+	} else
+		goto out;
+#if 0
+fail_disable_vreg_marimba_1:
+	vreg_disable(vreg_marimba_1);
+#endif
+out:
+	return rc;
+};
+static void msm_timpani_shutdown_power(void)
+{
+	int rc;
+#if 0
+	rc = vreg_disable(vreg_marimba_1);
+	if (rc) {
+		printk(KERN_ERR "%s: return val: %d\n",
+					__func__, rc);
+	}
+#endif
+	rc = vreg_disable(vreg_marimba_2);
+	if (rc) {
+		printk(KERN_ERR "%s: return val: %d\n",
+					__func__, rc);
+	}
+	rc = gpio_direction_output(TIMPANI_RESET_GPIO, 0);
+	if (rc < 0) {
+		printk(KERN_ERR
+			"%s: gpio_direction_output failed (%d)\n",
+				__func__, rc);
+	}
+	msm_gpios_free(timpani_reset_gpio_cfg,
+				   ARRAY_SIZE(timpani_reset_gpio_cfg));
+};
+#endif
 
 static struct msm_gpio marimba_svlte_config_clock[] = {
 	{ GPIO_CFG(34, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
@@ -1620,7 +1724,14 @@ static unsigned int msm_marimba_gpio_config_svlte(int gpio_cfg_marimba)
 static unsigned int msm_marimba_setup_power(void)
 {
 	int rc;
-
+#if 0
+	rc = vreg_enable(vreg_marimba_1);
+	if (rc) {
+		printk(KERN_ERR "%s: vreg_enable() = %d \n",
+					__func__, rc);
+		goto out;
+	}
+#endif
 	rc = vreg_enable(vreg_marimba_2);
 	if (rc) {
 		printk(KERN_ERR "%s: vreg_enable() = %d \n",
@@ -1635,7 +1746,13 @@ out:
 static void msm_marimba_shutdown_power(void)
 {
 	int rc;
-
+#if 0
+	rc = vreg_disable(vreg_marimba_1);
+	if (rc) {
+		printk(KERN_ERR "%s: return val: %d\n",
+					__func__, rc);
+	}
+#endif
 	rc = vreg_disable(vreg_marimba_2);
 	if (rc) {
 		printk(KERN_ERR "%s: return val: %d \n",
@@ -1709,7 +1826,7 @@ static int fm_radio_setup(struct marimba_fm_platform_data *pdata)
 			__func__, rc);
 		goto fm_clock_vote_fail;
 	}
-	irqcfg = GPIO_CFG(147, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL,
+	irqcfg = PCOM_GPIO_CFG(147, 0, GPIO_INPUT, GPIO_NO_PULL,
 					GPIO_CFG_2MA);
 	rc = gpio_tlmm_config(irqcfg, GPIO_CFG_ENABLE);
 	if (rc) {
@@ -1733,7 +1850,7 @@ static void fm_radio_shutdown(struct marimba_fm_platform_data *pdata)
 {
 	int rc;
 	const char *id = "FMPW";
-	uint32_t irqcfg = GPIO_CFG(147, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_UP,
+	uint32_t irqcfg = PCOM_GPIO_CFG(147, 0, GPIO_INPUT, GPIO_PULL_UP,
 					GPIO_CFG_2MA);
 	rc = gpio_tlmm_config(irqcfg, GPIO_CFG_ENABLE);
 	if (rc) {
@@ -1783,7 +1900,14 @@ static const char *vregs_tsadc_name[] = {
 	"s2",
 };
 static struct vreg *vregs_tsadc[ARRAY_SIZE(vregs_tsadc_name)];
-
+#if 0
+static const char *vregs_timpani_tsadc_name[] = {
+	"s3",
+	"gp12",
+	"gp16"
+};
+static struct vreg *vregs_timpani_tsadc[ARRAY_SIZE(vregs_timpani_tsadc_name)];
+#endif
 static int marimba_tsadc_power(int vreg_on)
 {
 	int i, rc = 0;
@@ -1956,6 +2080,14 @@ static struct marimba_platform_data marimba_pdata = {
 
 static void __init vivo_init_marimba(void)
 {
+#if 0
+	vreg_marimba_1 = vreg_get(NULL, "s2");
+	if (IS_ERR(vreg_marimba_1)) {
+		printk(KERN_ERR "%s: vreg get failed (%ld)\n",
+			__func__, PTR_ERR(vreg_marimba_1));
+		return;
+	}
+#endif
 	vreg_marimba_2 = vreg_get(NULL, "gp16");
 	if (IS_ERR(vreg_marimba_2)) {
 		printk(KERN_ERR "%s: vreg get failed (%ld)\n",
@@ -1963,6 +2095,35 @@ static void __init vivo_init_marimba(void)
 		return;
 	}
 }
+
+#if 0
+static struct marimba_codec_platform_data timpani_codec_pdata = {
+	.marimba_codec_power =  msm_marimba_codec_power,
+};
+static struct marimba_platform_data timpani_pdata = {
+	.slave_id[MARIMBA_SLAVE_ID_CDC]	= MARIMBA_SLAVE_ID_CDC_ADDR,
+	.slave_id[MARIMBA_SLAVE_ID_QMEMBIST] = MARIMBA_SLAVE_ID_QMEMBIST_ADDR,
+	.marimba_setup = msm_timpani_setup_power,
+	.marimba_shutdown = msm_timpani_shutdown_power,
+	.codec = &timpani_codec_pdata,
+	.tsadc = &marimba_tsadc_pdata,
+	.tsadc_ssbi_adap = MARIMBA_SSBI_ADAP,
+};
+#define TIMPANI_I2C_SLAVE_ADDR	0xD
+static struct i2c_board_info msm_i2c_gsbi7_timpani_info[] = {
+	{
+		I2C_BOARD_INFO("timpani", TIMPANI_I2C_SLAVE_ADDR),
+		.platform_data = &timpani_pdata,
+	},
+};
+#endif
+
+static struct i2c_board_info tpa2051_devices[] = {
+	{
+		I2C_BOARD_INFO(TPA2051D3_I2C_NAME, 0xE0 >> 1),
+		.platform_data = &tpa2051d3_platform_data,
+	},
+};
 
 #ifdef CONFIG_MSM7KV2_AUDIO
 static struct resource msm_aictl_resources[] = {
@@ -4526,6 +4687,9 @@ static void __init vivo_init(void)
 
 	i2c_register_board_info(2, msm_marimba_board_info,
 			ARRAY_SIZE(msm_marimba_board_info));
+
+	i2c_register_board_info(0, tpa2051_devices,
+			ARRAY_SIZE(tpa2051_devices));
 
 	i2c_register_board_info(4 /* QUP ID */, msm_camera_boardinfo,
 					ARRAY_SIZE(msm_camera_boardinfo));
