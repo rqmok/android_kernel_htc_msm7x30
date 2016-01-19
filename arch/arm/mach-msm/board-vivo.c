@@ -1052,6 +1052,12 @@ static uint32_t camera_off_gpio_table[] = {
 };
 
 static uint32_t camera_on_gpio_table[] = {
+#if 0
+	GPIO_CFG(CAM1_VCM_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),
+	GPIO_CFG(CAM2_RST, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),
+	GPIO_CFG(CAM1_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),
+	GPIO_CFG(CAM2_PWD, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
+#endif
 	GPIO_CFG(4, 1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT2 */
 	GPIO_CFG(5, 1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT3 */
 	GPIO_CFG(6, 1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT4 */
@@ -1119,106 +1125,106 @@ static int sensor_power_disable(char *power)
 }
 
 #ifdef CONFIG_S5K3H1GX
-static int vivo_s5k3h1gx_vreg_on(void)
+static int Vivo_s5k3h1gx_vreg_on(void)
 {
-  int rc;
-  pr_info("%s camera vreg on\n", __func__);
+	int rc;
+	pr_info("%s camera vreg on\n", __func__);
 
-  /* main camera VCM power */
-  rc = sensor_power_enable("gp4", 2850);
-  pr_info("sensor_power_enable(\"gp4\", 2850) == %d\n", rc);
+	/* main camera VCM power */
+	rc = sensor_power_enable("gp4", 2850);
+	pr_info("sensor_power_enable(\"gp4\", 2850) == %d\n", rc);
 
-  /* main / 2nd camera analog power */
-  rc = sensor_power_enable("gp6", 2850);
-  pr_info("sensor_power_enable(\"gp6\", 2850) == %d\n", rc);
-  msleep(5);
+	/* main / 2nd camera analog power */
+	rc = sensor_power_enable("gp6", 2850);
+	pr_info("sensor_power_enable(\"gp6\", 2850) == %d\n", rc);
+	msleep(5);
 
-  /* main / 2nd camera digital power */
-  rc = sensor_power_enable("lvsw1", 1800);
-  pr_info("sensor_power_enable(\"lvsw1\", 1800) == %d\n", rc);
-  msleep(5);
+	/* main / 2nd camera digital power */
+	rc = sensor_power_enable("lvsw1", 1800);
+	pr_info("sensor_power_enable(\"lvsw1\", 1800) == %d\n", rc);
+	msleep(5);
 
-  /* 2nd camera IO power */
-  rc = sensor_power_enable("wlan2", 1800);
-  pr_info("sensor_power_enable(\"wlan2\", 1800) == %d\n", rc);
+	/* 2nd camera IO power */
+	rc = sensor_power_enable("wlan2", 1800);
+	pr_info("sensor_power_enable(\"wlan2\", 1800) == %d\n", rc);
 
-  return rc;
+	return rc;
 }
 
-static int vivo_s5k3h1gx_vreg_off(void)
+static int Vivo_s5k3h1gx_vreg_off(void)
 {
-  int rc;
-  pr_info("%s camera vreg off\n", __func__);
+	int rc;
+	pr_info("%s camera vreg off\n", __func__);
 
-  /* 2nd camera IO power */
-  rc = sensor_power_disable("wlan2");
-  pr_info("sensor_power_disable(\"wlan2\") == %d\n", rc);
+	/* 2nd camera IO power */
+	rc = sensor_power_disable("wlan2");
+	pr_info("sensor_power_disable(\"wlan2\") == %d\n", rc);
 
-  /* main / 2nd camera digital power */
-  rc = sensor_power_disable("lvsw1");
-  pr_info("sensor_power_disable(\"lvsw1\") == %d\n", rc);
+	/* main / 2nd camera digital power */
+	rc = sensor_power_disable("lvsw1");
+	pr_info("sensor_power_disable(\"lvsw1\") == %d\n", rc);
 
-  /* main / 2nd camera analog power */
-  rc = sensor_power_disable("gp6");
-  pr_info("sensor_power_disable(\"gp6\") == %d\n", rc);
+	/* main / 2nd camera analog power */
+	rc = sensor_power_disable("gp6");
+	pr_info("sensor_power_disable(\"gp6\") == %d\n", rc);
 
-  /* main camera VCM power */
-  rc = sensor_power_disable("gp4");
-  pr_info("sensor_power_disable(\"gp4\") == %d\n", rc);
+	/* main camera VCM power */
+	rc = sensor_power_disable("gp4");
+	pr_info("sensor_power_disable(\"gp4\") == %d\n", rc);
 
-  return rc;
+	return rc;
 }
 #endif
 
 #ifdef CONFIG_S5K6AAFX
-static int vivo_s5k6aafx_vreg_on(void)
+static int Vivo_s5k6aafx_vreg_on(void)
 {
-  int rc;
-  pr_info("%s camera vreg on\n", __func__);
+	int rc;
+	pr_info("%s camera vreg on\n", __func__);
 
-  /* main camera VCM power */
-  rc = sensor_power_enable("gp4", 2850);
-  pr_info("sensor_power_enable(\"gp4\", 2850) == %d\n", rc);
+	/* main camera VCM power */
+	rc = sensor_power_enable("gp4", 2850);
+	pr_info("sensor_power_enable(\"gp4\", 2850) == %d\n", rc);
 
-  /* main / 2nd camera analog power */
-  rc = sensor_power_enable("gp6", 2850);
-  pr_info("sensor_power_enable(\"gp6\", 2850) == %d\n", rc);
-  msleep(5);
+	/* main / 2nd camera analog power */
+	rc = sensor_power_enable("gp6", 2850);
+	pr_info("sensor_power_enable(\"gp6\", 2850) == %d\n", rc);
+	msleep(5);
 
-  /* main / 2nd camera digital power */
-  rc = sensor_power_enable("lvsw1", 1800);
-  pr_info("sensor_power_enable(\"lvsw1\", 1800) == %d\n", rc);
-  msleep(5);
+	/* main / 2nd camera digital power */
+	rc = sensor_power_enable("lvsw1", 1800);
+	pr_info("sensor_power_enable(\"lvsw1\", 1800) == %d\n", rc);
+	msleep(5);
 
-  /* 2nd camera IO power */
-  rc = sensor_power_enable("wlan2", 1800);
-  pr_info("sensor_power_enable(\"wlan2\", 1800) == %d\n", rc);
+	/* 2nd camera IO power */
+	rc = sensor_power_enable("wlan2", 1800);
+	pr_info("sensor_power_enable(\"wlan2\", 1800) == %d\n", rc);
 
-  return rc;
+	return rc;
 }
 
-static int vivo_s5k6aafx_vreg_off(void)
+static int Vivo_s5k6aafx_vreg_off(void)
 {
-  int rc;
-  pr_info("%s camera vreg off\n", __func__);
+	int rc;
+	pr_info("%s camera vreg off\n", __func__);
 
-  /* 2nd camera IO power */
-  rc = sensor_power_disable("wlan2");
-  pr_info("sensor_power_disable(\"wlan2\") == %d\n", rc);
+	/* 2nd camera IO power */
+	rc = sensor_power_disable("wlan2");
+	pr_info("sensor_power_disable(\"wlan2\") == %d\n", rc);
 
-  /* main / 2nd camera digital power */
-  rc = sensor_power_disable("lvsw1");
-  pr_info("sensor_power_disable(\"lvsw1\") == %d\n", rc);
+	/* main / 2nd camera digital power */
+	rc = sensor_power_disable("lvsw1");
+	pr_info("sensor_power_disable(\"lvsw1\") == %d\n", rc);
 
-  /* main / 2nd camera analog power */
-  rc = sensor_power_disable("gp6");
-  pr_info("sensor_power_disable(\"gp6\") == %d\n", rc);
+	/* main / 2nd camera analog power */
+	rc = sensor_power_disable("gp6");
+	pr_info("sensor_power_disable(\"gp6\") == %d\n", rc);
 
-  /* main camera VCM power */
-  rc = sensor_power_disable("gp4");
-  pr_info("sensor_power_disable(\"gp4\") == %d\n", rc);
+	/* main camera VCM power */
+	rc = sensor_power_disable("gp4");
+	pr_info("sensor_power_disable(\"gp4\") == %d\n", rc);
 
-  return rc;
+	return rc;
 }
 #endif
 
@@ -1249,28 +1255,34 @@ struct resource msm_camera_resources[] = {
 	},
 };
 
-#ifdef CONFIG_FLASHLIGHT_AAT1271
+#ifdef CONFIG_ARCH_MSM_FLASHLIGHT
+static int flashlight_control(int mode)
+{
+	return aat1271_flashlight_control(mode);
+}
+
+static uint32_t fl_gpio_table[] = {
+        PCOM_GPIO_CFG(VIVO_GPIO_TORCH_EN, 0,
+                                        GPIO_OUTPUT, GPIO_PULL_DOWN, GPIO_CFG_2MA),
+
+};
+
 static void config_vivo_flashlight_gpios(void)
 {
-	uint32_t fl_gpio_table[] = {
-		GPIO_CFG(VIVO_GPIO_TORCH_EN, 0,
-				GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),
-	};
-	config_gpio_table(fl_gpio_table,
-		ARRAY_SIZE(fl_gpio_table));
+        config_gpio_table(fl_gpio_table, ARRAY_SIZE(fl_gpio_table));
 }
 
 static struct flashlight_platform_data vivo_flashlight_data = {
-	.gpio_init  = config_vivo_flashlight_gpios,
-	.torch = VIVO_GPIO_TORCH_EN,
-	.flash = PM8058_GPIO_PM_TO_SYS(VIVO_GPIO_FLASH_EN),
-	.flash_duration_ms = 600,
-	.led_count = 2,
+        .gpio_init              = config_vivo_flashlight_gpios,
+        .torch                  = VIVO_GPIO_TORCH_EN,
+        .flash                  = PM8058_GPIO_PM_TO_SYS(VIVO_GPIO_FLASH_EN),
+        .flash_duration_ms      = 600,
+	.led_count		= 2,
 };
 
 static struct platform_device vivo_flashlight_device = {
-	.name = AAT_FLT_DEV_NAME,
-	.dev		= {
+	.name = FLASHLIGHT_NAME,
+	.dev = {
 		.platform_data	= &vivo_flashlight_data,
 	},
 };
@@ -1291,7 +1303,7 @@ struct msm_camera_device_platform_data camera_device_data = {
 };
 
 #ifdef CONFIG_S5K3H1GX
-static void vivo_maincam_clk_switch(void){
+static void Vivo_maincam_clk_switch(void){
 	int rc = 0;
 	pr_info("[CAM] Doing clk switch (s5k3h1gx)\n");
 
@@ -1310,7 +1322,7 @@ static void vivo_maincam_clk_switch(void){
 #endif
 
 #ifdef CONFIG_S5K6AAFX
-static void vivo_seccam_clk_switch(void){
+static void Vivo_seccam_clk_switch(void){
 
 	int rc = 0;
 	pr_info("[CAM] Doing clk switch (s5k6aafx)\n");
@@ -1326,15 +1338,6 @@ static void vivo_seccam_clk_switch(void){
 }
 #endif
 
-static int flashlight_control(int mode)
-{
-#ifdef CONFIG_FLASHLIGHT_AAT1271
-	return aat1271_flashlight_control(mode);
-#else
-	return 0;
-#endif
-}
-
 static struct camera_flash_cfg msm_camera_sensor_flash_cfg = {
 	.camera_flash = flashlight_control,
 	.num_flash_levels = FLASHLIGHT_NUM,
@@ -1348,9 +1351,9 @@ static struct msm_camera_sensor_info msm_camera_sensor_s5k3h1gx_data = {
 	.sensor_name = "s5k3h1gx",
 	.sensor_pwd = CAM1_PWD,
 	.vcm_pwd = CAM1_VCM_PWD,
-	.camera_power_on = vivo_s5k3h1gx_vreg_on,
-	.camera_power_off = vivo_s5k3h1gx_vreg_off,
-	.camera_clk_switch = vivo_maincam_clk_switch,
+	.camera_power_on = Vivo_s5k3h1gx_vreg_on,
+	.camera_power_off = Vivo_s5k3h1gx_vreg_off,
+	.camera_clk_switch = Vivo_maincam_clk_switch,
 	.pdata = &camera_device_data,
 	.flash_type = MSM_CAMERA_FLASH_LED,
 	.resource = msm_camera_resources,
@@ -1365,19 +1368,21 @@ static struct msm_camera_sensor_info msm_camera_sensor_s5k3h1gx_data = {
 static struct platform_device msm_camera_sensor_s5k3h1gx = {
 	.name = "msm_camera_s5k3h1gx",
 	.dev = {
-	.platform_data = &msm_camera_sensor_s5k3h1gx_data,
+		.platform_data = &msm_camera_sensor_s5k3h1gx_data,
 	},
 };
 #endif
+
+
 
 #ifdef CONFIG_S5K6AAFX
 static struct msm_camera_sensor_info msm_camera_sensor_s5k6aafx_data = {
 	.sensor_name = "s5k6aafx",
 	.sensor_reset = CAM2_RST,
 	.sensor_pwd = CAM2_PWD,
-	.camera_power_on = vivo_s5k6aafx_vreg_on,
-	.camera_power_off = vivo_s5k6aafx_vreg_off,
-	.camera_clk_switch = vivo_seccam_clk_switch,
+	.camera_power_on = Vivo_s5k6aafx_vreg_on,
+	.camera_power_off = Vivo_s5k6aafx_vreg_off,
+	.camera_clk_switch = Vivo_seccam_clk_switch,
 	.pdata = &camera_device_data,
 	.flash_type = MSM_CAMERA_FLASH_LED,
 	.resource = msm_camera_resources,
@@ -1388,8 +1393,8 @@ static struct msm_camera_sensor_info msm_camera_sensor_s5k6aafx_data = {
 };
 
 static struct platform_device msm_camera_sensor_s5k6aafx = {
-	.name	   = "msm_camera_s5k6aafx",
-	.dev	    = {
+	.name = "msm_camera_s5k6aafx",
+	.dev = {
 		.platform_data = &msm_camera_sensor_s5k6aafx_data,
 	},
 };
@@ -3475,7 +3480,7 @@ static struct platform_device *devices[] __initdata = {
 #ifdef CONFIG_BT
 	&vivo_rfkill,
 #endif
-#ifdef CONFIG_FLASHLIGHT_AAT1271
+#ifdef CONFIG_ARCH_MSM_FLASHLIGHT
 	&vivo_flashlight_device,
 #endif
 	&cable_detect_device,
