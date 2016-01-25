@@ -30,6 +30,7 @@
 #include <linux/lightsensor.h>
 #include <linux/input.h>
 #include <linux/atmel_qt602240.h>
+#include <linux/elan_ktf2k.h>
 #include <linux/smsc911x.h>
 #include <linux/ofn_atlab.h>
 #include <linux/power_supply.h>
@@ -318,6 +319,47 @@ struct atmel_i2c_platform_data vivo_ts_atmel_data[] = {
 	},
 };
 
+static int vivo_ts_ektf2k_power(int on)
+{
+	pr_info("[TP] %s: power %d\n", __func__, on);
+
+	if (on) {
+		gpio_set_value(VIVO_GPIO_TP_EN, 1);
+		udelay(300);
+		gpio_set_value(PM8058_GPIO_PM_TO_SYS(VIVO_TP_RSTz), 1);
+		msleep(300);
+	} else {
+		gpio_set_value(VIVO_GPIO_TP_EN, 0);
+		udelay(11);
+	}
+
+	return 0;
+}
+
+static int vivo_ts_ektf2k_reset(void)
+{
+	pr_info("[TP]%s: gpio reset\n", __func__);
+	gpio_set_value(PM8058_GPIO_PM_TO_SYS(VIVO_TP_RSTz), 0);
+	udelay(100);
+	gpio_set_value(PM8058_GPIO_PM_TO_SYS(VIVO_TP_RSTz), 1);
+	msleep(300);
+
+	return 0;
+}
+
+struct elan_ktf2k_i2c_platform_data vivo_ts_ektf2k_data[] = {
+	{
+		.version = 0x0021,
+		.abs_x_min = 0,
+		.abs_x_max = 640,
+		.abs_y_min = 0,
+		.abs_y_max = 1088,
+		.intr_gpio = PM8058_GPIO_PM_TO_SYS(VIVO_GPIO_TP_INT_N),
+		.power = vivo_ts_ektf2k_power,
+		.reset = vivo_ts_ektf2k_reset,
+	},
+};
+
 static ssize_t vivo_virtual_keys_show(struct kobject *kobj,
 			struct kobj_attribute *attr, char *buf)
 {
@@ -337,8 +379,17 @@ static struct kobj_attribute vivo_virtual_keys_attr = {
 	.show = &vivo_virtual_keys_show,
 };
 
+static struct kobj_attribute vivo_ektf2k_virtual_keys_attr = {
+	.attr = {
+		.name = "virtualkeys.elan-touchscreen",
+		.mode = S_IRUGO,
+	},
+	.show = &vivo_virtual_keys_show,
+};
+
 static struct attribute *vivo_properties_attrs[] = {
 	&vivo_virtual_keys_attr.attr,
+	&vivo_ektf2k_virtual_keys_attr.attr,
 	NULL
 };
 
@@ -350,6 +401,11 @@ static struct i2c_board_info i2c_devices[] = {
 	{
 		I2C_BOARD_INFO(ATMEL_QT602240_NAME, 0x94 >> 1),
 		.platform_data = &vivo_ts_atmel_data,
+		.irq = PM8058_GPIO_IRQ(PM8058_IRQ_BASE, VIVO_GPIO_TP_INT_N)
+	},
+	{
+		I2C_BOARD_INFO(ELAN_KTF2K_NAME, 0x15),
+		.platform_data = &vivo_ts_ektf2k_data,
 		.irq = PM8058_GPIO_IRQ(PM8058_IRQ_BASE, VIVO_GPIO_TP_INT_N)
 	},
 };
@@ -1899,136 +1955,6 @@ static struct marimba_fm_platform_data marimba_fm_pdata = {
 #define BAHAMA_SLAVE_ID_FM_ADDR         0x2A
 #define BAHAMA_SLAVE_ID_QMEMBIST_ADDR   0x7B
 
-static const char *tsadc_id = "MADC";
-static const char *vregs_tsadc_name[] = {
-	"gp12",
-	"s2",
-};
-static struct vreg *vregs_tsadc[ARRAY_SIZE(vregs_tsadc_name)];
-#if 0
-static const char *vregs_timpani_tsadc_name[] = {
-	"s3",
-	"gp12",
-	"gp16"
-};
-static struct vreg *vregs_timpani_tsadc[ARRAY_SIZE(vregs_timpani_tsadc_name)];
-#endif
-static int marimba_tsadc_power(int vreg_on)
-{
-	int i, rc = 0;
-
-	for (i = 0; i < ARRAY_SIZE(vregs_tsadc_name); i++) {
-		if (!vregs_tsadc[i]) {
-			pr_err("%s: vreg_get %s failed (%d)\n",
-				__func__, vregs_tsadc_name[i], rc);
-			goto vreg_fail;
-		}
-
-			rc = vreg_on ? vreg_enable(vregs_tsadc[i]) :
-				  vreg_disable(vregs_tsadc[i]);
-			if (rc < 0) {
-				pr_err("%s: vreg %s %s failed (%d)\n",
-					__func__, vregs_tsadc_name[i],
-				       vreg_on ? "enable" : "disable", rc);
-				goto vreg_fail;
-			}
-		}
-		/* If marimba vote for DO buffer */
-		rc = pmapp_clock_vote(tsadc_id, PMAPP_CLOCK_ID_DO,
-			vreg_on ? PMAPP_CLOCK_VOTE_ON : PMAPP_CLOCK_VOTE_OFF);
-		if (rc)	{
-			pr_err("%s: unable to %svote for d0 clk\n",
-				__func__, vreg_on ? "" : "de-");
-			goto do_vote_fail;
-	}
-
-	mdelay(5); /* ensure power is stable */
-
-	return 0;
-
-do_vote_fail:
-vreg_fail:
-	while (i)
-		vreg_disable(vregs_tsadc[--i]);
-	return rc;
-}
-
-static int marimba_tsadc_vote(int vote_on)
-{
-	int rc, level;
-
-	level = vote_on ? 1300 : 0;
-
-	rc = pmapp_vreg_level_vote(tsadc_id, PMAPP_VREG_S2, level);
-	if (rc < 0)
-		pr_err("%s: vreg level %s failed (%d)\n",
-			__func__, vote_on ? "on" : "off", rc);
-
-	return rc;
-}
-
-static int marimba_tsadc_init(void)
-{
-	int i, rc = 0;
-
-		for (i = 0; i < ARRAY_SIZE(vregs_tsadc_name); i++) {
-			vregs_tsadc[i] = vreg_get(NULL, vregs_tsadc_name[i]);
-			if (IS_ERR(vregs_tsadc[i])) {
-				pr_err("%s: vreg get %s failed (%ld)\n",
-				       __func__, vregs_tsadc_name[i],
-				       PTR_ERR(vregs_tsadc[i]));
-				rc = PTR_ERR(vregs_tsadc[i]);
-				goto vreg_get_fail;
-		}
-
-	}
-
-	return rc;
-
-vreg_get_fail:
-	while (i)
-		vreg_put(vregs_tsadc[--i]);
-	return rc;
-}
-
-static int marimba_tsadc_exit(void)
-{
-	int i, rc;
-
-		for (i = 0; i < ARRAY_SIZE(vregs_tsadc_name); i++) {
-			if (vregs_tsadc[i])
-				vreg_put(vregs_tsadc[i]);
-		}
-		rc = pmapp_vreg_level_vote(tsadc_id, PMAPP_VREG_S2, 0);
-		if (rc < 0)
-			pr_err("%s: vreg level off failed (%d)\n",
-						__func__, rc);
-
-
-	return rc;
-}
-
-static struct marimba_tsadc_platform_data marimba_tsadc_pdata = {
-	.marimba_tsadc_power =  marimba_tsadc_power,
-	.init		     =  marimba_tsadc_init,
-	.exit		     =  marimba_tsadc_exit,
-	.level_vote	     =  marimba_tsadc_vote,
-	.tsadc_prechg_en = true,
-	.setup = {
-		.pen_irq_en	=	true,
-		.tsadc_en	=	true,
-	},
-	.params2 = {
-		.input_clk_khz		=	2400,
-		.sample_prd		=	TSADC_CLK_3,
-	},
-	.params3 = {
-		.prechg_time_nsecs	=	6400,
-		.stable_time_nsecs	=	6400,
-		.tsadc_test_mode	=	0,
-	},
-};
-
 static struct vreg *vreg_codec_s4;
 static int msm_marimba_codec_power(int vreg_on)
 {
@@ -2078,21 +2004,12 @@ static struct marimba_platform_data marimba_pdata = {
 	.marimba_shutdown = msm_marimba_shutdown_power,
 	.marimba_gpio_config = msm_marimba_gpio_config_svlte,
 	.fm = &marimba_fm_pdata,
-	.tsadc = &marimba_tsadc_pdata,
 	.codec = &mariba_codec_pdata,
 	.tsadc_ssbi_adap = MARIMBA_SSBI_ADAP,
 };
 
 static void __init vivo_init_marimba(void)
 {
-#if 0
-	vreg_marimba_1 = vreg_get(NULL, "s2");
-	if (IS_ERR(vreg_marimba_1)) {
-		printk(KERN_ERR "%s: vreg get failed (%ld)\n",
-			__func__, PTR_ERR(vreg_marimba_1));
-		return;
-	}
-#endif
 	vreg_marimba_2 = vreg_get(NULL, "gp16");
 	if (IS_ERR(vreg_marimba_2)) {
 		printk(KERN_ERR "%s: vreg get failed (%ld)\n",
@@ -2100,28 +2017,6 @@ static void __init vivo_init_marimba(void)
 		return;
 	}
 }
-
-#if 0
-static struct marimba_codec_platform_data timpani_codec_pdata = {
-	.marimba_codec_power =  msm_marimba_codec_power,
-};
-static struct marimba_platform_data timpani_pdata = {
-	.slave_id[MARIMBA_SLAVE_ID_CDC]	= MARIMBA_SLAVE_ID_CDC_ADDR,
-	.slave_id[MARIMBA_SLAVE_ID_QMEMBIST] = MARIMBA_SLAVE_ID_QMEMBIST_ADDR,
-	.marimba_setup = msm_timpani_setup_power,
-	.marimba_shutdown = msm_timpani_shutdown_power,
-	.codec = &timpani_codec_pdata,
-	.tsadc = &marimba_tsadc_pdata,
-	.tsadc_ssbi_adap = MARIMBA_SSBI_ADAP,
-};
-#define TIMPANI_I2C_SLAVE_ADDR	0xD
-static struct i2c_board_info msm_i2c_gsbi7_timpani_info[] = {
-	{
-		I2C_BOARD_INFO("timpani", TIMPANI_I2C_SLAVE_ADDR),
-		.platform_data = &timpani_pdata,
-	},
-};
-#endif
 
 static struct i2c_board_info tpa2051_devices[] = {
 	{
