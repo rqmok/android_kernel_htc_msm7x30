@@ -2408,17 +2408,18 @@ int kgsl_postmortem_dump(struct kgsl_device *device, int manual)
 			kgsl_idle(device);
 
 	}
+	KGSL_LOG_DUMP(device, "|%s| Dump Started\n", device->name);
+	KGSL_LOG_DUMP(device, "POWER: FLAGS = %08lX | ACTIVE POWERLEVEL = %08X",
+			pwr->power_flags, pwr->active_pwrlevel);
 
-	if (device->pm_dump_enable) {
+	KGSL_LOG_DUMP(device, "POWER: INTERVAL TIMEOUT = %08X ",
+		pwr->interval_timeout);
 
-		KGSL_LOG_DUMP(device,
-				"POWER: FLAGS = %08lX | ACTIVE POWERLEVEL = %08X",
-				pwr->power_flags, pwr->active_pwrlevel);
+	KGSL_LOG_DUMP(device, "GRP_CLK = %lu ",
+				  kgsl_get_clkrate(pwr->grp_clks[0]));
 
-		KGSL_LOG_DUMP(device, "POWER: INTERVAL TIMEOUT = %08X ",
-				pwr->interval_timeout);
-
-	}
+	KGSL_LOG_DUMP(device, "BUS CLK = %lu ",
+		kgsl_get_clkrate(pwr->ebi1_clk));
 
 	/* Disable the idle timer so we don't get interrupted */
 	del_timer_sync(&device->idle_timer);
@@ -2446,7 +2447,7 @@ int kgsl_postmortem_dump(struct kgsl_device *device, int manual)
 	/* On a manual trigger, turn on the interrupts and put
 	   the clocks to sleep.  They will recover themselves
 	   on the next event.  For a hang, leave things as they
-	   are until fault tolerance kicks in. */
+	   are until recovery kicks in. */
 
 	if (manual) {
 		kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_ON);
@@ -2455,6 +2456,8 @@ int kgsl_postmortem_dump(struct kgsl_device *device, int manual)
 		kgsl_pwrctrl_request_state(device, KGSL_STATE_SLEEP);
 		kgsl_pwrctrl_sleep(device);
 	}
+
+	KGSL_LOG_DUMP(device, "|%s| Dump Finished\n", device->name);
 
 	return 0;
 }
