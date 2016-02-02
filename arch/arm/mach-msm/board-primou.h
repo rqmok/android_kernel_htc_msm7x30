@@ -41,10 +41,12 @@
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MSM_FB_PRIM_BUF_SIZE \
-				(roundup((800 * 480 * 4), 4096) * 3) /* 4 bpp x 3 pages */
+				(roundup((roundup(800, 32) * roundup(480, 32) * 4), 4096) * 3)
+						/* 4 bpp x 3 pages */
 #else
 #define MSM_FB_PRIM_BUF_SIZE \
-				(roundup((800 * 480 * 4), 4096) * 2) /* 4 bpp x 2 pages */
+				(roundup((roundup(800, 32) * roundup(480, 32) * 4), 4096) * 2)
+						/* 4 bpp x 2 pages */
 #endif
 
 /* Note: must be multiple of 4096 */
