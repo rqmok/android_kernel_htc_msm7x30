@@ -24,10 +24,6 @@
 #include <linux/debug_by_vibrator.h>
 #include <linux/wakelock.h>
 #include <mach/msm_rpcrouter.h>
-#define VIB_INFO_LOG(fmt, ...) \
-		printk(KERN_INFO "[VIB]" fmt, ##__VA_ARGS__)
-#define VIB_ERR_LOG(fmt, ...) \
-		printk(KERN_ERR "[VIB][ERR]" fmt, ##__VA_ARGS__)
 
 #define PM_LIBPROG      0x30000061
 #ifdef  CONFIG_RPC_VER_60001
@@ -65,7 +61,7 @@ static void set_pmic_vibrator(int on)
 		vib_endpoint = msm_rpc_connect(PM_LIBPROG, PM_LIBVERS, 0);
 #endif
 		if (IS_ERR(vib_endpoint)) {
-			VIB_ERR_LOG("init vib rpc failed!\n");
+			pr_err("init vib rpc failed!\n");
 			vib_endpoint = 0;
 			return;
 		}
@@ -78,7 +74,7 @@ static void set_pmic_vibrator(int on)
 		sizeof(req), 5 * HZ);
 
 	if (rc < 0)
-		VIB_ERR_LOG("msm_rpc_call failed (%d)!\n", rc);
+		pr_err("msm_rpc_call failed (%d)!\n", rc);
 	else if (on)
 		pr_info("[ATS][set_vibration][successful]\n");
 
@@ -88,24 +84,24 @@ static void set_pmic_vibrator_on(void)
 {
 	int rc;
 	uint32_t data1, data2;
-	VIB_INFO_LOG("%s: + \n", __func__);
+	pr_debug("%s: + \n", __func__);
 	data1 = 0x1;
 	data2 = 0x0;
 	rc = msm_proc_comm(PCOM_CUSTOMER_CMD1, &data1, &data2);
 	if (rc)
-		VIB_ERR_LOG("%s: data1 0x%x, rc=%d\n", __func__, data1, rc);
-	VIB_INFO_LOG("%s: - \n", __func__);
+		pr_err("%s: data1 0x%x, rc=%d\n", __func__, data1, rc);
+	pr_debug("%s: - \n", __func__);
 }
 static void set_pmic_vibrator_off(void){
 	int rc;
 	uint32_t data1, data2;
-	VIB_INFO_LOG("%s: + \n", __func__);
+	pr_debug("%s: + \n", __func__);
 	data1 = 0x0;
 	data2 = 0x0;
 	rc = msm_proc_comm(PCOM_CUSTOMER_CMD1, &data1, &data2);
 	if (rc)
-		VIB_ERR_LOG("%s: data1 0x%x, rc=%d\n", __func__, data1, rc);
-	VIB_INFO_LOG("%s: - \n", __func__);
+		pr_err("%s: data1 0x%x, rc=%d\n", __func__, data1, rc);
+	pr_debug("%s: - \n", __func__);
 }
 #endif
 
@@ -130,7 +126,7 @@ retry:
 		goto retry;
 	}
 
-	VIB_INFO_LOG("vibrator_enable, %s(parent:%s): vibrates %d msec\n",
+	pr_debug("vibrator_enable, %s(parent:%s): vibrates %d msec\n",
 				current->comm, current->parent->comm, value);
 
 	if (value == 0)
@@ -152,7 +148,7 @@ retry:
 		goto retry;
 	}
 
-	VIB_INFO_LOG("vibrator_enable, %s(parent:%s): vibrates %d msec\n",
+	pr_debug("vibrator_enable, %s(parent:%s): vibrates %d msec\n",
 				current->comm, current->parent->comm, value);
 
 	if (value == 0)
@@ -180,7 +176,7 @@ static int vibrator_get_time(struct timed_output_dev *dev)
 
 static enum hrtimer_restart vibrator_timer_func(struct hrtimer *timer)
 {
-	VIB_INFO_LOG("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 #ifdef CONFIG_MSM_RPC_VIBRATOR
 	vibe_state = 0;
 	schedule_work(&vibrator_work);
@@ -215,7 +211,7 @@ int debug_by_vibrator(int mode, const char *name)
 	int ret = 0;
 	unsigned long flags;
 
-	VIB_INFO_LOG("debug_by_vibrator used by %s, %s(parent:%s): vibrates in mode %d\n", name,
+	pr_debug("debug_by_vibrator used by %s, %s(parent:%s): vibrates in mode %d\n", name,
 			current->comm, current->parent->comm, mode);
 
 	if(mode == DISABLE){
@@ -234,7 +230,7 @@ int debug_by_vibrator(int mode, const char *name)
 			      HRTIMER_MODE_REL);
 		spin_unlock_irqrestore(&vibe_lock, flags);
 		schedule_work(&vibrator_work);
-		VIB_INFO_LOG(": Kernel ERROR!!Root cause module is %s \n\n",name);
+		pr_err(": Kernel ERROR!!Root cause module is %s \n\n",name);
 		ret = 0;
 	}
 	else if(mode== CRASH_MODE){
@@ -243,11 +239,11 @@ int debug_by_vibrator(int mode, const char *name)
 		vibe_state = 1;
 		spin_unlock_irqrestore(&vibe_lock, flags);
 		schedule_work(&vibrator_work);
-		VIB_INFO_LOG(": FATAL ERROR!!Root cause module is %s \n\n",name);
+		pr_err(": FATAL ERROR!!Root cause module is %s \n\n",name);
 		ret = 0;
 	}
 	else{
-		VIB_INFO_LOG(": Using a incrrect mode in DEBUG_BY_VIBRATOR interface!\n");
+		pr_err(": Using a incrrect mode in DEBUG_BY_VIBRATOR interface!\n");
 		ret = -1;
 	}
 
@@ -341,16 +337,16 @@ void __init msm_init_pmic_vibrator(int level)
 	timed_output_dev_register(&pmic_vibrator);
 	rc = device_create_file(pmic_vibrator.dev, &dev_attr_voltage_level);
 	if (rc < 0)
-		VIB_ERR_LOG("%s, create voltage_level fail\n", __func__);
+		pr_err("%s, create voltage_level fail\n", __func__);
 #if defined(CONFIG_DEBUG_BY_VIBRATOR)	//HTC_CSP_START
 
 	rc = device_create_file(pmic_vibrator.dev, &dev_attr_debug_by_vibrator);
 	if (rc < 0) {
-		VIB_ERR_LOG("%s, create debug sysfs fail\n", __func__);
+		pr_err("%s, create debug sysfs fail\n", __func__);
 /*		goto err_create_debug_flag; */
 	}
 #endif	//HTC_CSP_END
-	VIB_INFO_LOG("%s, init pmic vibrator!",__func__);
+	pr_info("%s, init pmic vibrator!",__func__);
 	return;
 /*err_create_debug_flag:
 	device_remove_attrs(pmic_vibrator.dev);*/
