@@ -282,7 +282,7 @@ struct nov_regs {
 
 static struct nov_regs sony_init_seq[] = {
 	{0x1100, 0x00},
-	{REG_WAIT, 120},
+	{REG_WAIT, 10},
 	{0x0480, 0x63},
 	{0x0580, 0x63},
 	{0x0680, 0x63},
@@ -415,22 +415,20 @@ mddi_power(struct msm_mddi_client_data *client_data, int on)
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 
 		vreg_enable(V_LCM_2V85);
-		msleep(3);
 		vreg_enable(V_LCMIO_1V8);
-		msleep(5);
 
 		gpio_set_value(VIVO_LCD_RSTz, 1);
 		msleep(1);
 		gpio_set_value(VIVO_LCD_RSTz, 0);
 		msleep(1);
 		gpio_set_value(VIVO_LCD_RSTz, 1);
-		msleep(15);
+		msleep(5);
 
 	} else {
 
-		msleep(80);
-		gpio_set_value(VIVO_LCD_RSTz, 0);
 		msleep(10);
+		gpio_set_value(VIVO_LCD_RSTz, 0);
+		msleep(5);
 		vreg_disable(V_LCMIO_1V8);
 		vreg_disable(V_LCM_2V85);
 
