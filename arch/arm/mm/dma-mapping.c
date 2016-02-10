@@ -737,21 +737,6 @@ static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
 {
 	u64 mask = get_coherent_dma_mask(dev);
 	struct page *page;
-	page = __dma_alloc_buffer(dev, size, gfp);
-	if (!page)
-		return NULL;
-
-	*ret_page = page;
-	return page_address(page);
-}
-
-
-
-static void *__dma_alloc(struct device *dev, size_t size, dma_addr_t *handle,
-			 gfp_t gfp, pgprot_t prot, const void *caller)
-{
-	u64 mask = get_coherent_dma_mask(dev);
-	struct page *page;
 	void *addr;
 
 #ifdef CONFIG_DMA_API_DEBUG
