@@ -54,7 +54,7 @@
 
 #ifdef CONFIG_ION_MSM
 #define MSM_ION_MM_SIZE		0x01E00000
-#define MSM_ION_SF_SIZE		0x02400000
+#define MSM_ION_SF_SIZE		0x02000000
 #define MSM_ION_HEAP_NUM	3
 #endif
 
