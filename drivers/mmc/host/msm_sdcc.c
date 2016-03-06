@@ -4586,7 +4586,7 @@ msmsdcc_probe(struct platform_device *pdev)
 	mmc->caps |= plat->mmc_bus_width;
 
 	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
-	mmc->caps |= MMC_CAP_WAIT_WHILE_BUSY | MMC_CAP_ERASE;
+	mmc->caps |= MMC_CAP_WAIT_WHILE_BUSY;
 
 	if (is_sd_platform(host->plat) || is_mmc_platform(host->plat))
 		mmc->caps |= MMC_CAP_ERASE;
