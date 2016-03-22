@@ -14,6 +14,7 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/syscalls.h>
+#include <linux/key.h>
 #include <linux/keyctl.h>
 #include <linux/fs.h>
 #include <linux/capability.h>
@@ -374,6 +375,37 @@ error:
 }
 
 /*
+ * Invalidate a key.
+ *
+ * The key must be grant the caller Invalidate permission for this to work.
+ * The key and any links to the key will be automatically garbage collected
+ * immediately.
+ *
+ * If successful, 0 is returned.
+ */
+long keyctl_invalidate_key(key_serial_t id)
+{
+	key_ref_t key_ref;
+	long ret;
+
+	kenter("%d", id);
+
+	key_ref = lookup_user_key(id, 0, KEY_SEARCH);
+	if (IS_ERR(key_ref)) {
+		ret = PTR_ERR(key_ref);
+		goto error;
+	}
+
+	key_invalidate(key_ref_to_ptr(key_ref));
+	ret = 0;
+
+	key_ref_put(key_ref);
+error:
+	kleave(" = %ld", ret);
+	return ret;
+}
+
+/*
  * Clear the specified keyring, creating an empty process keyring if one of the
  * special keyring IDs is used.
  *
@@ -388,11 +420,24 @@ long keyctl_keyring_clear(key_serial_t ringid)
 	keyring_ref = lookup_user_key(ringid, KEY_LOOKUP_CREATE, KEY_WRITE);
 	if (IS_ERR(keyring_ref)) {
 		ret = PTR_ERR(keyring_ref);
+
+		/* Root is permitted to invalidate certain special keyrings */
+		if (capable(CAP_SYS_ADMIN)) {
+			keyring_ref = lookup_user_key(ringid, 0, 0);
+			if (IS_ERR(keyring_ref))
+				goto error;
+			if (test_bit(KEY_FLAG_ROOT_CAN_CLEAR,
+				     &key_ref_to_ptr(keyring_ref)->flags))
+				goto clear;
+			goto error_put;
+		}
+
 		goto error;
 	}
 
+clear:
 	ret = keyring_clear(key_ref_to_ptr(keyring_ref));
-
+error_put:
 	key_ref_put(keyring_ref);
 error:
 	return ret;
@@ -1067,12 +1112,12 @@ long keyctl_instantiate_key_iov(key_serial_t id,
 	ret = rw_copy_check_uvector(WRITE, _payload_iov, ioc,
 				    ARRAY_SIZE(iovstack), iovstack, &iov, 1);
 	if (ret < 0)
-		goto err;
+		return ret;
 	if (ret == 0)
 		goto no_payload_free;
 
 	ret = keyctl_instantiate_key_common(id, iov, ioc, ret, ringid);
-err:
+
 	if (iov != iovstack)
 		kfree(iov);
 	return ret;
@@ -1244,10 +1289,8 @@ error:
  */
 long keyctl_set_timeout(key_serial_t id, unsigned timeout)
 {
-	struct timespec now;
 	struct key *key, *instkey;
 	key_ref_t key_ref;
-	time_t expiry;
 	long ret;
 
 	key_ref = lookup_user_key(id, KEY_LOOKUP_CREATE | KEY_LOOKUP_PARTIAL,
@@ -1273,20 +1316,7 @@ long keyctl_set_timeout(key_serial_t id, unsigned timeout)
 
 okay:
 	key = key_ref_to_ptr(key_ref);
-
-	/* make the changes with the locks held to prevent races */
-	down_write(&key->sem);
-
-	expiry = 0;
-	if (timeout > 0) {
-		now = current_kernel_time();
-		expiry = now.tv_sec + timeout;
-	}
-
-	key->expiry = expiry;
-	key_schedule_gc(key->expiry + key_gc_delay);
-
-	up_write(&key->sem);
+	key_set_timeout(key, timeout);
 	key_put(key);
 
 	ret = 0;
@@ -1622,6 +1652,9 @@ SYSCALL_DEFINE5(keyctl, int, option, unsigned long, arg2, unsigned long, arg3,
 			(const struct iovec __user *) arg3,
 			(unsigned) arg4,
 			(key_serial_t) arg5);
+
+	case KEYCTL_INVALIDATE:
+		return keyctl_invalidate_key((key_serial_t) arg2);
 
 	default:
 		return -EOPNOTSUPP;
