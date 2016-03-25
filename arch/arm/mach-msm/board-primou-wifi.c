@@ -84,7 +84,7 @@ static struct resource primou_wifi_resources[] = {
 		.start		= MSM_GPIO_TO_INT(PRIMOU_GPIO_WIFI_IRQ),
 		.end		= MSM_GPIO_TO_INT(PRIMOU_GPIO_WIFI_IRQ),
 #ifdef CONFIG_BCMDHD_GOOGLE
-		.flags          = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL | IORESOURCE_IRQ_SHAREABLE,
+		.flags          = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
 #else
 		.flags          = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
 #endif
