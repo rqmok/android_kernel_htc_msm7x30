@@ -4649,9 +4649,9 @@ struct ion_platform_heap msm7x30_heaps[] = {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
 		/* MM */
 		{
-			.id	= ION_CAMERA_HEAP_ID,
+			.id	= ION_CP_MM_HEAP_ID,
 			.type	= ION_HEAP_TYPE_CARVEOUT,
-			.name	= ION_CAMERA_HEAP_NAME,
+			.name	= ION_MM_HEAP_NAME,
 			.memory_type = ION_EBI_TYPE,
 			.extra_data = (void *)&co_ion_pdata,
 		},
@@ -4725,7 +4725,7 @@ static void __init size_ion_devices(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
 	ion_pdata.heaps[1].base = MSM_PMEM_ADSP_BASE;
-	ion_pdata.heaps[1].size = MSM_ION_CAMERA_SIZE;
+	ion_pdata.heaps[1].size = MSM_ION_MM_SIZE;
 	ion_pdata.heaps[2].size = MSM_ION_SF_SIZE;
 	ion_pdata.heaps[3].size = MSM_ION_WB_SIZE;
 #endif
@@ -4734,7 +4734,7 @@ static void __init size_ion_devices(void)
 static void __init reserve_ion_memory(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
-  	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_CAMERA_SIZE;
+  	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_MM_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_SF_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_WB_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += 1;
