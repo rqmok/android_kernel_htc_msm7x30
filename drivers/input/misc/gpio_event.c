@@ -182,7 +182,7 @@ static int gpio_event_probe(struct platform_device *pdev)
 			sweep2wake_atmel_setdev(input_dev);
 #endif
 #ifdef CONFIG_MACH_VIVO
-		if (!strcmp(input_dev->name, "spade-keypad")) {
+		if (!strcmp(input_dev->name, "vivo-keypad")) {
 			sweep2wake_atmel_setdev(input_dev);
 #endif
 			printk(KERN_INFO "[sweep2wake]: set device %s\n", input_dev->name);
