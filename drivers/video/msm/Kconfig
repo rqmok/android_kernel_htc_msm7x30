@@ -790,6 +790,12 @@ config FB_MSM_MDDI_PRIMOU_WVGA
 	---help---
 	  Support for MDDI Primou WVGA (800x480) panel
 
+config FB_MSM_MDDI_VIVO_WVGA
+	bool "MDDI Vivo WVGA Panel"
+	select FB_MSM_MDDI
+	---help---
+	  Support for MDDI Vivo WVGA (800x480) panel
+
 config FB_MSM_MIPI_LGIT_VIDEO_WXGA_PT_PANEL
 	bool "MIPI LG Display WXGA PT Panel"
 	select FB_MSM_MIPI_LGIT_VIDEO_WXGA_PT
