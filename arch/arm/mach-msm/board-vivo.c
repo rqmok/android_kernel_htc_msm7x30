@@ -4706,7 +4706,6 @@ static void __init size_pmem_devices(void)
 {
 #ifdef CONFIG_ANDROID_PMEM
 #ifndef CONFIG_ANDROID_PMEM_ION_WRAPPER
-	android_pmem_adsp_pdata.start = MSM_PMEM_ADSP_BASE;
 	android_pmem_adsp_pdata.size = MSM_PMEM_ADSP_SIZE;
 #endif
 #endif
@@ -4717,6 +4716,7 @@ static void __init reserve_pmem_memory(void)
 #ifdef CONFIG_ANDROID_PMEM
 #ifndef CONFIG_ANDROID_PMEM_ION_WRAPPER
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += PMEM_KERNEL_EBI0_SIZE;
+	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_PMEM_ADSP_SIZE;
 #endif
 #endif
 }
@@ -4724,7 +4724,6 @@ static void __init reserve_pmem_memory(void)
 static void __init size_ion_devices(void)
 {
 #ifdef CONFIG_MSM_MULTIMEDIA_USE_ION
-	ion_pdata.heaps[1].base = MSM_PMEM_ADSP_BASE;
 	ion_pdata.heaps[1].size = MSM_ION_MM_SIZE;
 	ion_pdata.heaps[2].size = MSM_ION_SF_SIZE;
 	ion_pdata.heaps[3].size = MSM_ION_WB_SIZE;
