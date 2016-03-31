@@ -27,14 +27,10 @@
 #include <linux/i2c.h>
 #include <linux/akm8975.h>
 #include <linux/bma150.h>
-#include <linux/lightsensor.h>
 #include <linux/input.h>
 #include <linux/atmel_qt602240.h>
 #include <linux/elan_ktf2k.h>
-#include <linux/smsc911x.h>
-#include <linux/ofn_atlab.h>
 #include <linux/power_supply.h>
-#include <linux/i2c/isa1200.h>
 #include <linux/input/kp_flip_switch.h>
 #include <linux/leds-pm8058.h>
 #include <linux/msm_adc.h>
@@ -56,7 +52,6 @@
 #include <mach/qdsp5v2/msm_lpa.h>
 #include <mach/dma.h>
 #include <linux/android_pmem.h>
-#include <linux/input/msm_ts.h>
 #include <mach/pmic.h>
 
 #include <mach/rpc_pmapp.h>
@@ -116,18 +111,9 @@
 
 int htc_get_usb_accessory_adc_level(uint32_t *buffer);
 
-#define GPS_EN_GPIO -1
-
 #define PMIC_VREG_WLAN_LEVEL	2900
 
-#define ADV7520_I2C_ADDR	0x39
-
 #define FPGA_SDCC_STATUS       0x8E0001A8
-
-#define FPGA_OPTNAV_GPIO_ADDR	0x8E000026
-#define OPTNAV_I2C_SLAVE_ADDR	(0xB0 >> 1)
-#define OPTNAV_IRQ		20
-#define OPTNAV_CHIP_SELECT	19
 
 /* Macros assume PMIC GPIOs start at 0 */
 #define PM8058_GPIO_PM_TO_SYS(pm_gpio)     (pm_gpio + NR_GPIO_IRQS)
@@ -1656,9 +1642,6 @@ static int __init buses_init(void)
 	return 0;
 }
 
-
-#define TIMPANI_RESET_GPIO	1
-
 struct bahama_config_register{
 	u8 reg;
 	u8 value;
@@ -1671,88 +1654,7 @@ enum version{
 	VER_UNSUPPORTED = 0xFF
 };
 
-
-/*static struct vreg *vreg_marimba_1;*/
 static struct vreg *vreg_marimba_2;
-
-#if 0
-static struct msm_gpio timpani_reset_gpio_cfg[] = {
-{ GPIO_CFG(TIMPANI_RESET_GPIO, 0, GPIO_CFG_OUTPUT,
-	GPIO_CFG_NO_PULL, GPIO_CFG_2MA), "timpani_reset"} };
-static int config_timpani_reset(void)
-{
-	int rc;
-	rc = msm_gpios_request_enable(timpani_reset_gpio_cfg,
-				ARRAY_SIZE(timpani_reset_gpio_cfg));
-	if (rc < 0) {
-		printk(KERN_ERR
-			"%s: msm_gpios_request_enable failed (%d)\n",
-				__func__, rc);
-	}
-	return rc;
-}
-static unsigned int msm_timpani_setup_power(void)
-{
-	int rc;
-	rc = config_timpani_reset();
-	if (rc < 0)
-		goto out;
-#if 0
-	rc = vreg_enable(vreg_marimba_1);
-	if (rc) {
-		printk(KERN_ERR "%s: vreg_enable() = %d\n",
-					__func__, rc);
-		goto out;
-	}
-#endif
-	rc = vreg_enable(vreg_marimba_2);
-	if (rc) {
-		printk(KERN_ERR "%s: vreg_enable() = %d\n",
-					__func__, rc);
-	/*	goto fail_disable_vreg_marimba_1; */
-	}
-	rc = gpio_direction_output(TIMPANI_RESET_GPIO, 1);
-	if (rc < 0) {
-		printk(KERN_ERR
-			"%s: gpio_direction_output failed (%d)\n",
-				__func__, rc);
-		msm_gpios_free(timpani_reset_gpio_cfg,
-				ARRAY_SIZE(timpani_reset_gpio_cfg));
-		vreg_disable(vreg_marimba_2);
-	} else
-		goto out;
-#if 0
-fail_disable_vreg_marimba_1:
-	vreg_disable(vreg_marimba_1);
-#endif
-out:
-	return rc;
-};
-static void msm_timpani_shutdown_power(void)
-{
-	int rc;
-#if 0
-	rc = vreg_disable(vreg_marimba_1);
-	if (rc) {
-		printk(KERN_ERR "%s: return val: %d\n",
-					__func__, rc);
-	}
-#endif
-	rc = vreg_disable(vreg_marimba_2);
-	if (rc) {
-		printk(KERN_ERR "%s: return val: %d\n",
-					__func__, rc);
-	}
-	rc = gpio_direction_output(TIMPANI_RESET_GPIO, 0);
-	if (rc < 0) {
-		printk(KERN_ERR
-			"%s: gpio_direction_output failed (%d)\n",
-				__func__, rc);
-	}
-	msm_gpios_free(timpani_reset_gpio_cfg,
-				   ARRAY_SIZE(timpani_reset_gpio_cfg));
-};
-#endif
 
 static struct msm_gpio marimba_svlte_config_clock[] = {
 	{ GPIO_CFG(34, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
@@ -1777,14 +1679,6 @@ static unsigned int msm_marimba_gpio_config_svlte(int gpio_cfg_marimba)
 static unsigned int msm_marimba_setup_power(void)
 {
 	int rc;
-#if 0
-	rc = vreg_enable(vreg_marimba_1);
-	if (rc) {
-		printk(KERN_ERR "%s: vreg_enable() = %d \n",
-					__func__, rc);
-		goto out;
-	}
-#endif
 	rc = vreg_enable(vreg_marimba_2);
 	if (rc) {
 		printk(KERN_ERR "%s: vreg_enable() = %d \n",
@@ -1799,13 +1693,6 @@ out:
 static void msm_marimba_shutdown_power(void)
 {
 	int rc;
-#if 0
-	rc = vreg_disable(vreg_marimba_1);
-	if (rc) {
-		printk(KERN_ERR "%s: return val: %d\n",
-					__func__, rc);
-	}
-#endif
 	rc = vreg_disable(vreg_marimba_2);
 	if (rc) {
 		printk(KERN_ERR "%s: return val: %d \n",
@@ -2311,128 +2198,6 @@ static struct platform_device android_usb_device = {
 	},
 };
 #endif
-
-static struct msm_gpio optnav_config_data[] = {
-	{ GPIO_CFG(OPTNAV_CHIP_SELECT, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_8MA),
-	"optnav_chip_select" },
-};
-
-
-static void __iomem *virtual_optnav;
-
-static int optnav_gpio_setup(void)
-{
-	int rc = -ENODEV;
-	rc = msm_gpios_request_enable(optnav_config_data,
-			ARRAY_SIZE(optnav_config_data));
-
-	/* Configure the FPGA for GPIOs */
-	virtual_optnav = ioremap(FPGA_OPTNAV_GPIO_ADDR, 0x4);
-	if (!virtual_optnav) {
-		pr_err("%s:Could not ioremap region\n", __func__);
-		return -ENOMEM;
-	}
-	/*
-	 * Configure the FPGA to set GPIO 19 as
-	 * normal, active(enabled), output(MSM to SURF)
-	 */
-	writew(0x311E, virtual_optnav);
-	return rc;
-}
-
-static void optnav_gpio_release(void)
-{
-	msm_gpios_disable_free(optnav_config_data,
-		ARRAY_SIZE(optnav_config_data));
-	iounmap(virtual_optnav);
-}
-
-static struct vreg *vreg_gp9;
-static struct vreg *vreg_usb3_3;
-
-static int optnav_enable(void)
-{
-
-	int rc;
-	/*
-	 * Enable the VREGs L8(gp7), L10(gp4), L12(gp9), L6(usb)
-	 * for I2C communication with keyboard.
-	 */
-	vreg_gp9 = vreg_get(NULL, "gp9");
-	rc = vreg_set_level(vreg_gp9, 1800);
-	if (rc) {
-		pr_err("%s: vreg_set_level failed \n", __func__);
-		goto fail_vreg_gp9;
-	}
-
-	rc = vreg_enable(vreg_gp9);
-	if (rc) {
-		pr_err("%s: vreg_enable failed \n", __func__);
-		goto fail_vreg_gp9;
-	}
-
-	vreg_usb3_3 = vreg_get(NULL, "usb");
-	rc = vreg_set_level(vreg_usb3_3, 3300);
-	if (rc) {
-		pr_err("%s: vreg_set_level failed \n", __func__);
-		goto fail_vreg_3_3;
-	}
-
-	rc = vreg_enable(vreg_usb3_3);
-	if (rc) {
-		pr_err("%s: vreg_enable failed \n", __func__);
-		goto fail_vreg_3_3;
-	}
-
-	/* Enable the chip select GPIO */
-	gpio_set_value(OPTNAV_CHIP_SELECT, 1);
-	gpio_set_value(OPTNAV_CHIP_SELECT, 0);
-
-	return 0;
-
-fail_vreg_3_3:
-	vreg_disable(vreg_gp9);
-
-fail_vreg_gp9:
-	return rc;
-}
-
-static void optnav_disable(void)
-{
-	vreg_disable(vreg_usb3_3);
-	vreg_disable(vreg_gp9);
-	gpio_set_value(OPTNAV_CHIP_SELECT, 1);
-}
-
-static struct ofn_atlab_platform_data optnav_data = {
-	.gpio_setup    = optnav_gpio_setup,
-	.gpio_release  = optnav_gpio_release,
-	.optnav_on     = optnav_enable,
-	.optnav_off    = optnav_disable,
-	.rotate_xy     = 0,
-	.function1 = {
-		.no_motion1_en		= true,
-		.touch_sensor_en	= true,
-		.ofn_en			= true,
-		.clock_select_khz	= 1500,
-		.cpi_selection		= 1200,
-	},
-	.function2 =  {
-		.invert_y		= false,
-		.invert_x		= true,
-		.swap_x_y		= false,
-		.hold_a_b_en		= true,
-		.motion_filter_en       = true,
-	},
-};
-
-static struct i2c_board_info msm_i2c_board_info[] = {
-	{
-		I2C_BOARD_INFO("m33c01", OPTNAV_I2C_SLAVE_ADDR),
-		.irq		= MSM_GPIO_TO_INT(OPTNAV_IRQ),
-		.platform_data = &optnav_data,
-	},
-};
 
 static struct i2c_board_info msm_marimba_board_info[] = {
 	{
@@ -4412,9 +4177,6 @@ static void __init vivo_init(void)
 	msm_snddev_init();
 	vivo_audio_init();
 #endif
-
-	i2c_register_board_info(0, msm_i2c_board_info,
-			ARRAY_SIZE(msm_i2c_board_info));
 
 	i2c_register_board_info(0, i2c_tps_devices,
 			ARRAY_SIZE(i2c_tps_devices));
