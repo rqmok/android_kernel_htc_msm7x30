@@ -4740,7 +4740,6 @@ static void __init reserve_ion_memory(void)
 #endif
 }
 
-
 static void __init msm7x30_calculate_reserve_sizes(void)
 {
 	size_pmem_devices();
