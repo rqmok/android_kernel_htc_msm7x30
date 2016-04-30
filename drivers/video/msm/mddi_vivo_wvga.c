@@ -43,7 +43,7 @@ struct nov_regs {
 
 static struct nov_regs sony_init_seq[] = {
 	{0x1100, 0x00},
-	{REG_WAIT, 60},
+	{REG_WAIT, 120},
 	{0x0480, 0x63},
 	{0x0580, 0x63},
 	{0x0680, 0x63},
@@ -95,6 +95,7 @@ static int mddi_vivo_panel_on(struct platform_device *pdev)
 
 	write_client_reg(0x24, 0x5300);
 	write_client_reg(0x0A, 0x22C0);
+	msleep(30);
 
 	return 0;
 }
@@ -112,6 +113,7 @@ static void mddi_vivo_panel_set_backlight(struct msm_fb_data_type *mfd)
 {
 	printk(KERN_DEBUG "[BL] Setting bl to %d\n", mfd->bl_level);    
 
+	write_client_reg(0x00, 0x5500)
 	write_client_reg(mfd->bl_level, 0x5100);
 }
 

@@ -84,9 +84,9 @@ static int mddi_novatec_power(int on)
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 		
 		vreg_enable(V_LCMIO_2V8);
-		msleep(5);
-		vreg_enable(V_LCMIO_1V8);
 		msleep(3);
+		vreg_enable(V_LCMIO_1V8);
+		msleep(5);
 
 		gpio_set_value(VIVO_LCD_RSTz, 1);
 		msleep(1);
@@ -97,9 +97,9 @@ static int mddi_novatec_power(int on)
 		
 	} else {
 	
-		msleep(40);
+		msleep(80);
 		gpio_set_value(VIVO_LCD_RSTz, 0);
-		msleep(5);
+		msleep(10);
 		vreg_disable(V_LCMIO_1V8);
 		vreg_disable(V_LCMIO_2V8);
 
