@@ -28,7 +28,7 @@
 #include "mddihost.h" 
 #include "mddihosti.h"
 
-#define write_client_reg(val, reg) mddi_queue_register_write(reg, val, TRUE, 0);
+#define write_client_reg(val, reg) mddi_queue_register_write(reg, val, FALSE, 0);
 
 static struct mddi_panel_platform_data *pdata;
 static struct msm_fb_panel_data vivowvga_panel_data;
