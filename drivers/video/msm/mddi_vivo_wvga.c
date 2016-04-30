@@ -33,6 +33,7 @@
 static struct mddi_panel_platform_data *pdata;
 static struct msm_fb_panel_data vivowvga_panel_data;
 
+
 #define REG_WAIT (0xffff)
 
 struct nov_regs {
@@ -90,6 +91,8 @@ static int vivo_panel_init(void)
 
 static int mddi_vivo_panel_on(struct platform_device *pdev)
 {
+	vivo_panel_init();
+
 	write_client_reg(0x24, 0x5300);
 	write_client_reg(0x0A, 0x22C0);
 	msleep(30);
@@ -120,8 +123,6 @@ static int vivowvga_probe(struct platform_device *pdev)
 		pdata = pdev->dev.platform_data;
 		return 0;
 	}
-	
-	vivo_panel_init();
 
 	msm_fb_add_device(pdev);
 
