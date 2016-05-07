@@ -107,7 +107,7 @@ static unsigned int primou_wifi_status(struct device *dev)
 
 static unsigned int primou_wifislot_type = MMC_TYPE_SDIO_WIFI;
 static struct mmc_platform_data primou_wifi_data = {
-		.ocr_mask               = MMC_VDD_20_21,
+		.ocr_mask               = MMC_VDD_28_29,
 		.status                 = primou_wifi_status,
 		.register_status_notify = primou_wifi_status_register,
 		.embedded_sdio          = &primou_wifi_emb_data,
