@@ -56,10 +56,7 @@
 /* mv = (750mV + (raw * 25mV)) * (2 - VREF_SEL) */
 #define VDD_RAW(mv) (((MV(mv) / V_STEP) - 30) | VREG_DATA)
 
-#ifdef CONFIG_MACH_SAGA
-#define MAX_AXI_KHZ 192000
-#endif 
-#ifdef CONFIG_MACH_PRIMOU
+#if defined(CONFIG_MACH_SAGA) || defined(CONFIG_MACH_PRIMOU) || defined(CONFIG_MACH_VIVO)
 #define MAX_AXI_KHZ 192000
 #else
 #define MAX_AXI_KHZ 201600
@@ -100,7 +97,7 @@ static struct clock_state drv_state = { 0 };
 static struct clkctl_acpu_speed *backup_s;
 
 static struct pll pll2_tbl[] = {
-#ifdef CONFIG_MACH_SAGA
+#if defined(CONFIG_MACH_SAGA) || defined(CONFIG_MACH_VIVO)
 	{  28, 1, 3, 0 }, /*  544 MHz */
 	{  31, 1, 4, 0 }, /*  600 MHz */
 	{  42, 0, 1, 0 }, /*  806 MHz */
@@ -115,7 +112,7 @@ static struct pll pll2_tbl[] = {
 	{  94, 0, 1, 0 }, /* 1.8 */
 	{  98, 1, 3, 0 }, /* 1900 MHz */
 	{ 103, 1, 3, 0 }, /* 2016 MHz */
-#endif
+#else
 #ifdef CONFIG_MACH_PRIMOU
 	{  42, 0, 1, 0 }, /*  806 MHz */
 	{  53, 1, 3, 0 }, /* 1024 MHz */
@@ -133,6 +130,7 @@ static struct pll pll2_tbl[] = {
 	{  68, 0, 1, 0 }, /* 1305 MHz */
 	{  73, 0, 1, 0 }, /* 1401 MHz */
 	{  78, 0, 1, 0 }, /* 1500 MHz */
+#endif /* CONFIG_MACH_PRIMOU */
 #endif
 };
 
@@ -157,7 +155,7 @@ static struct clk *acpuclk_sources[MAX_SOURCE];
  * know all the h/w requirements.
  */
 static struct clkctl_acpu_speed acpu_freq_tbl[] = {
-#ifdef CONFIG_MACH_SAGA
+#if defined(CONFIG_MACH_SAGA) || defined(CONFIG_MACH_VIVO)
 	{ 0, 24576,  LPXO,     0, 0,  30720000,  800, VDD_RAW(800) },
 	{ 0, 61440,  PLL_3,    5, 11, 61440000,  800, VDD_RAW(800) },
 	{ 0, 122880, PLL_3,    5, 5,  61440000,  800, VDD_RAW(800) },
@@ -182,7 +180,7 @@ static struct clkctl_acpu_speed acpu_freq_tbl[] = {
 	{ 1, 1804800, PLL_2, 3, 0, 192000000, 1400, VDD_RAW(1400), &pll2_tbl[11]},
 	{ 1, 1920000, PLL_2, 3, 0, 192000000, 1450, VDD_RAW(1450), &pll2_tbl[12]},
 	{ 1, 2016000, PLL_2, 3, 0, 192000000, 1500, VDD_RAW(1500), &pll2_tbl[13]},
-#endif
+#else
 #ifdef CONFIG_MACH_PRIMOU
 	{ 0, 24576,  LPXO, 0, 0,  30720000,  1000, VDD_RAW(1000) },
 	{ 0, 61440,  PLL_3,    5, 11, 61440000,  1000, VDD_RAW(1000) },
@@ -234,6 +232,7 @@ static struct clkctl_acpu_speed acpu_freq_tbl[] = {
 	{ 1, 1920000, PLL_2, 3, 0, 199680000, 1475, VDD_RAW(1475), &pll2_tbl[5]},
 	{ 1, 1996800, PLL_2, 3, 0, 199680000, 1500, VDD_RAW(1500), &pll2_tbl[5]},
 	{ 1, 2016000, PLL_2, 3, 0, 201600000, 1525, VDD_RAW(1525), &pll2_tbl[5]},
+#endif /* CONFIG_MACH_PRIMOU */
 #endif
 	{ 0 }
 };
