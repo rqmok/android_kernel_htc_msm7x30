@@ -107,7 +107,7 @@ static struct mmc_platform_data vivo_wifi_data = {
 	.msmsdcc_fmin   = 144000,
 	.msmsdcc_fmid   = 24576000,
 	.msmsdcc_fmax   = 49152000,
-	.nonremovable   = 0,
+	.nonremovable   = 1,
 };
 
 int msm7x30_wifi_set_carddetect(int val)
