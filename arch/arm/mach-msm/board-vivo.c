@@ -3878,7 +3878,7 @@ static struct mmc_platform_data msm7x30_sdc4_data = {
 	.msmsdcc_fmin	= 144000,
 	.msmsdcc_fmid	= 25000000,
 	.msmsdcc_fmax	= 50000000,
-	.nonremovable	= 0,
+	.nonremovable	= 1,
 	.slot_type     = &vivo_sdc4_slot_type,
 };
 #endif
