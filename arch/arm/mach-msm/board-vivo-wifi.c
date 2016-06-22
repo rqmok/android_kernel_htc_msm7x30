@@ -321,7 +321,6 @@ static struct wifi_platform_data msm7x30_wifi_control = {
 	.set_reset      = msm7x30_wifi_reset,
 	.set_carddetect = msm7x30_wifi_set_carddetect,
 	.mem_prealloc   = msm7x30_wifi_mem_prealloc,
-	.get_country_code	= msm7x30_wifi_get_country_code,
 };
 
 static struct platform_device msm7x30_wifi_device = {
