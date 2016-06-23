@@ -159,6 +159,6 @@ int __init vivo_wifi_init(void);
 void __init vivo_audio_init(void);
 int __init vivo_init_keypad(void);
 int __init vivo_init_panel(void);
-void vivo_mdp_writeback(struct memtype_reserve *reserve_table);
+void __init vivo_mdp_writeback(void);
 
 #endif /* __ARCH_ARM_MACH_MSM_BOARD_VIVO_H */

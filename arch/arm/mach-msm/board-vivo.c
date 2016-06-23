@@ -4324,7 +4324,7 @@ static struct memtype_reserve msm7x30_reserve_table[] __initdata = {
 
 static void __init reserve_mdp_memory(void)
 {
-	vivo_mdp_writeback(msm7x30_reserve_table);
+	vivo_mdp_writeback();
 }
 
 static void __init size_pmem_devices(void)

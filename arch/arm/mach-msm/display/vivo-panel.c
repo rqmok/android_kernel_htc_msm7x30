@@ -133,7 +133,7 @@ static struct msm_panel_common_pdata mdp_pdata = {
 	.mem_hid = BIT(ION_CP_WB_HEAP_ID),
 };
 
-void __init vivo_mdp_writeback(struct memtype_reserve* reserve_table)
+void __init vivo_mdp_writeback(void)
 {
 	mdp_pdata.ov0_wb_size = MSM_FB_OVERLAY0_WRITEBACK_SIZE;
 }
