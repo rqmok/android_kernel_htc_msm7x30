@@ -16,7 +16,6 @@
 #define __ARCH_ARM_MACH_MSM_BOARD_VIVO_H
 
 #include <mach/board.h>
-#include <mach/msm_memtypes.h>
 
 /* Macros assume PMIC GPIOs start at 0 */
 #define PM8058_GPIO_PM_TO_SYS(pm_gpio)     (pm_gpio + NR_GPIO_IRQS)
@@ -32,8 +31,6 @@
 
 #define MSM_PMEM_ADSP_SIZE      	0x01E00000
 #define MSM_PMEM_SF_SIZE 		0x02000000
-
-#define PMEM_KERNEL_EBI0_SIZE   	0x00500000
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 #define MSM_FB_PRIM_BUF_SIZE \

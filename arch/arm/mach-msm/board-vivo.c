@@ -4340,7 +4340,6 @@ static void __init reserve_pmem_memory(void)
 {
 #ifdef CONFIG_ANDROID_PMEM
 #ifndef CONFIG_ANDROID_PMEM_ION_WRAPPER
-	msm7x30_reserve_table[MEMTYPE_EBI0].size += PMEM_KERNEL_EBI0_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_PMEM_ADSP_SIZE;
 #endif
 #endif
@@ -4361,7 +4360,6 @@ static void __init reserve_ion_memory(void)
   	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_MM_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_SF_SIZE;
 	msm7x30_reserve_table[MEMTYPE_EBI0].size += MSM_ION_WB_SIZE;
-	msm7x30_reserve_table[MEMTYPE_EBI0].size += 1;
 #endif
 }
 
@@ -4369,9 +4367,9 @@ static void __init msm7x30_calculate_reserve_sizes(void)
 {
 	size_pmem_devices();
 	reserve_pmem_memory();
+	reserve_mdp_memory();
 	size_ion_devices();
 	reserve_ion_memory();
-	reserve_mdp_memory();
 }
 
 static int msm7x30_paddr_to_memtype(unsigned int paddr)
