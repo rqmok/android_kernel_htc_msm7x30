@@ -1477,15 +1477,11 @@ Enomem:
 
 struct vfsmount *collect_mounts(struct path *path)
 {
-	struct mount *tree;
+	struct vfsmount *tree;
 	down_write(&namespace_sem);
-	if (!check_mnt(real_mount(path->mnt)))
-		tree = ERR_PTR(-EINVAL);
-	else
-		tree = copy_tree(real_mount(path->mnt), path->dentry,
-				 CL_COPY_ALL | CL_PRIVATE);
+	tree = copy_tree(path->mnt, path->dentry, CL_COPY_ALL | CL_PRIVATE);
 	up_write(&namespace_sem);
-	return tree ? &tree->mnt : NULL;
+	return tree;
 }
 
 void drop_collected_mounts(struct vfsmount *mnt)
