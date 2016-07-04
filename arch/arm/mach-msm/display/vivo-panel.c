@@ -27,11 +27,13 @@
 #include <mach/msm_iomap.h>
 #include <mach/vreg.h>
 #include <linux/msm_ion.h>
+#include <mach/panel_id.h>
 
 #include "../board-vivo.h"
 #include "../devices.h"
 #include "../proc_comm.h"
 
+extern int panel_type;
 
 int device_fb_detect_panel(const char *name)
 {
@@ -83,25 +85,44 @@ static int mddi_novatec_power(int on)
 		config = GPIO_CFG(VIVO_LCD_ID0, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
 		
-		vreg_enable(V_LCMIO_2V8);
-		msleep(3);
-		vreg_enable(V_LCMIO_1V8);
-		msleep(5);
+		if (panel_type == PANEL_ID_VIVO_HITACHI) {
+			vreg_enable(V_LCMIO_1V8);
+			vreg_enable(V_LCMIO_2V8);
+			msleep(1);
 
-		gpio_set_value(VIVO_LCD_RSTz, 1);
-		msleep(1);
-		gpio_set_value(VIVO_LCD_RSTz, 0);
-		msleep(1);
-		gpio_set_value(VIVO_LCD_RSTz, 1);
-		msleep(15);
+			gpio_set_value(VIVO_LCD_RSTz, 1);
+			msleep(5);
+			gpio_set_value(VIVO_LCD_RSTz, 0);
+			msleep(1);
+			gpio_set_value(VIVO_LCD_RSTz, 1);
+			msleep(5);
+		} else {
+			vreg_enable(V_LCMIO_2V8);
+			msleep(3);
+			vreg_enable(V_LCMIO_1V8);
+			msleep(5);
+
+			gpio_set_value(VIVO_LCD_RSTz, 1);
+			msleep(1);
+			gpio_set_value(VIVO_LCD_RSTz, 0);
+			msleep(1);
+			gpio_set_value(VIVO_LCD_RSTz, 1);
+			msleep(15);
+		}
 		
 	} else {
-	
-		msleep(80);
-		gpio_set_value(VIVO_LCD_RSTz, 0);
-		msleep(10);
-		vreg_disable(V_LCMIO_1V8);
-		vreg_disable(V_LCMIO_2V8);
+		if (panel_type == PANEL_ID_VIVO_HITACHI) {
+			gpio_set_value(VIVO_LCD_RSTz, 0);
+			msleep(10);
+			vreg_disable(V_LCMIO_2V8);
+			vreg_disable(V_LCMIO_1V8);
+		} else {
+			msleep(80);
+			gpio_set_value(VIVO_LCD_RSTz, 0);
+			msleep(10);
+			vreg_disable(V_LCMIO_1V8);
+			vreg_disable(V_LCMIO_2V8);
+		}
 
 		config = GPIO_CFG(VIVO_MDDI_TE, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA);
 		rc = msm_proc_comm(PCOM_RPC_GPIO_TLMM_CONFIG_EX, &config, 0);
@@ -141,6 +162,15 @@ void __init vivo_mdp_writeback(void)
 int __init vivo_init_panel(void)
 {
 	int ret;
+	
+	switch (panel_type) {
+	case PANEL_ID_VIVO_HITACHI:
+		printk("%s: Using hitachi panel.\n", __func__);
+		break;
+	default:
+		printk("%s: Using sony panel.\n", __func__);
+		break;
+	}
 
 	ret = panel_init_power();
 	if (ret)
