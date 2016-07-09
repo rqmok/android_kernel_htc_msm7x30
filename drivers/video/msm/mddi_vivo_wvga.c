@@ -292,7 +292,7 @@ static int __init vivowvga_init(void)
 	panel_data->panel_info.type = MDDI_PANEL;
 	panel_data->panel_info.mddi.vdopkt = MDDI_DEFAULT_PRIM_PIX_ATTR;
 	panel_data->panel_info.wait_cycle = 0;
-	panel_data->panel_info.bpp = 24;
+	panel_data->panel_info.bpp = 16;
 	panel_data->panel_info.clk_rate = 192000000;
 	panel_data->panel_info.clk_min = 192000000;
 	panel_data->panel_info.clk_max = 192000000;
