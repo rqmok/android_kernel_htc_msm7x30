@@ -47,9 +47,9 @@ static struct msm_fb_panel_data vivowvga_panel_data;
 #define REG_WAIT (0xffff)
 
 struct mddi_cmd {
-        unsigned char cmd;
+        u32 cmd;
         unsigned delay;
-        unsigned int *vals;
+        u32 *vals;
         unsigned len;
 };
 
@@ -62,7 +62,7 @@ static struct mddi_cmd hitachi_renesas_cmd[] = {
 	LCM_CMD(0x2A, 0, 0x00, 0x00, 0x01, 0xDF),
 	LCM_CMD(0x2B, 0, 0x00, 0x00, 0x03, 0x1F),
 	LCM_CMD(0x36, 0, 0x00, 0x00, 0x00, 0x00),
-	LCM_CMD(0x3A, 0, 0x55, 0x55, 0x55, 0x55),//set_pixel_format 0x66 for 18bit/pixel, 0x77 for 24bit/pixel
+	LCM_CMD(0x3A, 0, 0x77, 0x77, 0x77, 0x77),//set_pixel_format 0x66 for 18bit/pixel, 0x77 for 24bit/pixel
 	LCM_CMD(0xB0, 0, 0x04, 0x00, 0x00, 0x00),
 	LCM_CMD(0x35, 0, 0x00, 0x00, 0x00, 0x00),//TE enable
 	LCM_CMD(0xB0, 0, 0x03, 0x00, 0x00, 0x00),
@@ -273,7 +273,7 @@ static int __init vivowvga_init(void)
 	panel_data->panel_info.type = MDDI_PANEL;
 	panel_data->panel_info.mddi.vdopkt = MDDI_DEFAULT_PRIM_PIX_ATTR;
 	panel_data->panel_info.wait_cycle = 0;
-	panel_data->panel_info.bpp = 16;
+	panel_data->panel_info.bpp = 24;
 	panel_data->panel_info.clk_rate = 192000000;
 	panel_data->panel_info.clk_min = 192000000;
 	panel_data->panel_info.clk_max = 192000000;
