@@ -136,7 +136,7 @@ static void do_renesas_cmd(struct mddi_cmd *cmd_table, ssize_t size)
 	{		
 		ret = mddi_host_register_multiwrite(pcmd->cmd, pcmd->vals, pcmd->len, TRUE, 0, MDDI_HOST_PRIM);
 		if (ret != 0)
-            printk(KERN_ERR "%s: failed multiwrite (%d)\n", __func__, ret);
+			printk(KERN_ERR "%s: failed multiwrite (%d)\n", __func__, ret);
 			
 		if (pcmd->delay)
 			msleep(pcmd->delay);
@@ -217,13 +217,16 @@ static int mddi_vivo_panel_off(struct platform_device *pdev)
 
 static void mddi_vivo_panel_set_backlight(struct msm_fb_data_type *mfd)
 {
+	int ret = 0;
 	struct mddi_cmd *pcmd = hitachi_renesas_backlight_cmd;
 	
 	switch (panel_type) {
 		case PANEL_ID_VIVO_HITACHI:
 			pcmd->vals[4] = mfd->bl_level;
 			write_client_reg(0x04, 0xB0);
-			do_renesas_cmd(hitachi_renesas_backlight_cmd, ARRAY_SIZE(hitachi_renesas_backlight_cmd));
+			ret = mddi_host_register_multiwrite(pcmd->cmd, pcmd->vals, pcmd->len, TRUE, 0, MDDI_HOST_PRIM);
+			if (ret != 0)
+				printk(KERN_ERR "%s: failed multiwrite (%d)\n", __func__, ret);
 			write_client_reg(0x03, 0xB0);
 			break;
 		default:
