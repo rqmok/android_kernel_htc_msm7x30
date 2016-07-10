@@ -374,6 +374,10 @@ typedef struct GCC_PACKED {
 	/* list of 4-byte register data values for/from client registers */
 	/* For multi-read/write, 512(128 * 4) bytes of data available */
 
+#ifndef ENABLE_MDDI_MULTI_READ_WRITE
+	uint32 register_data_list_ext[4];
+#endif
+
 } mddi_register_access_packet_type;
 
 typedef union GCC_PACKED {
