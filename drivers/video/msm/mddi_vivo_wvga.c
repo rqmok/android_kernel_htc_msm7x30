@@ -33,58 +33,35 @@
 
 extern int panel_type;
 
-#define LCM_CMD(_cmd, _delay, ...)                              \
-{                                                               \
-        .cmd = _cmd,                                            \
-        .delay = _delay,                                        \
-        .vals = (u32 []){__VA_ARGS__},                           \
-        .len = sizeof((u32 []){__VA_ARGS__}) / sizeof(u32)        \
-}
-
 static struct mddi_panel_platform_data *pdata;
 static struct msm_fb_panel_data vivowvga_panel_data;
 
+static void mddi_vivo_set_backlight(u32 backlight_lvl);
+
 #define REG_WAIT (0xffff)
 
-struct mddi_cmd {
-        u32 cmd;
-        unsigned delay;
-        u32 *vals;
-        unsigned len;
-};
-
-struct nov_regs {
+struct mddi_regs {
     unsigned reg;
     unsigned val;
 };
 
-static struct mddi_cmd hitachi_renesas_cmd[] = {
-	LCM_CMD(0x2A, 0, 0x00, 0x00, 0x01, 0xDF),
-	LCM_CMD(0x2B, 0, 0x00, 0x00, 0x03, 0x1F),
-	LCM_CMD(0x36, 0, 0x00, 0x00, 0x00, 0x00),
-	LCM_CMD(0x3A, 0, 0x77, 0x77, 0x77, 0x77),//set_pixel_format 0x66 for 18bit/pixel, 0x77 for 24bit/pixel
-	LCM_CMD(0xB0, 0, 0x04, 0x00, 0x00, 0x00),
-	LCM_CMD(0x35, 0, 0x00, 0x00, 0x00, 0x00),//TE enable
-	LCM_CMD(0xB0, 0, 0x03, 0x00, 0x00, 0x00),
-//	LCM_CMD(0xB0, 0, 0x04, 0x00, 0x00, 0x00),
-//	LCM_CMD(0xB0, 0, 0x03, 0x00, 0x00, 0x00),
-//	LCM_CMD(0x29, 100,0x00,0x00,0x00,0x00),
+static struct mddi_regs hitachi_init_seq[] = {
+	{0x2A, 0x000001DF},
+	{0x2B, 0x0000031F},
+	{0x36, 0x00},
+	{0x3A, 0x77}, // 0x55 = 16bpp, 0x66 = 18bpp, 0x77 = 24bpp.
+	{0xB0, 0x04},
+	{0x35, 0x00}, // TE enable
+	{0xB0, 0x03},
 };
 
-static struct mddi_cmd hitachi_renesas_driving_cmd[] = {
-	LCM_CMD(0xB0, 0, 0x04, 0x00, 0x00, 0x00),
-	LCM_CMD(0xC1, 0, 0x43, 0x31, 0x00, 0x00),
-	LCM_CMD(0xB0, 0, 0x03, 0x00, 0x00, 0x00),
+static struct mddi_regs hitachi_driving_seq[] = {
+	{0xB0, 0x04},
+	{0xC1, 0x4331},
+	{0xB0, 0x03},
 };
 
-static struct mddi_cmd hitachi_renesas_backlight_cmd[] = {
-	LCM_CMD(0xB9, 0, 0x00, 0x00, 0x00, 0x00,
-			 0xff, 0x00, 0x00, 0x00,
-			 0x03, 0x00, 0x00, 0x00,
-			 0x08, 0x00, 0x00, 0x00,),
-};
-
-static struct nov_regs sony_init_seq[] = {
+static struct mddi_regs sony_init_seq[] = {
 	{0x1100, 0x00},
 	{REG_WAIT, 120},
 	{0x0480, 0x63},
@@ -109,23 +86,7 @@ static struct nov_regs sony_init_seq[] = {
 	{0x2900, 0x00},
 };
 
-static void do_renesas_cmd(struct mddi_cmd *cmd_table, ssize_t size)
-{
-	struct mddi_cmd *pcmd = NULL;
-	int ret = 0;
-	
-	for (pcmd = cmd_table; pcmd < cmd_table + size; pcmd++)
-	{		
-		ret = mddi_host_register_multiwrite(pcmd->cmd, pcmd->vals, pcmd->len, TRUE, 0, MDDI_HOST_PRIM);
-		if (ret != 0)
-			printk(KERN_ERR "%s: failed multiwrite (%d)\n", __func__, ret);
-			
-		if (pcmd->delay)
-			msleep(pcmd->delay);
-	}
-}
-
-static int write_seq(struct nov_regs *cmd_table, unsigned array_size)
+static int write_seq(struct mddi_regs *cmd_table, unsigned array_size)
 {
 	int i;
 
@@ -136,7 +97,6 @@ static int write_seq(struct nov_regs *cmd_table, unsigned array_size)
 			msleep(cmd_table[i].val);
 			continue;
 		}
-		
 		write_client_reg(cmd_table[i].val, cmd_table[i].reg);
 	}
 	
@@ -147,7 +107,7 @@ static int vivo_panel_init(void)
 {
 	switch (panel_type) {
 		case PANEL_ID_VIVO_HITACHI:
-			do_renesas_cmd(hitachi_renesas_cmd, ARRAY_SIZE(hitachi_renesas_cmd));
+			write_seq(hitachi_init_seq, ARRAY_SIZE(hitachi_init_seq));
 			break;
 		default:
 			write_seq(sony_init_seq, ARRAY_SIZE(sony_init_seq));
@@ -165,13 +125,15 @@ static int mddi_vivo_panel_on(struct platform_device *pdev)
 		case PANEL_ID_VIVO_HITACHI:
 			write_client_reg(0x0, 0x11);
 			msleep(125);
-			do_renesas_cmd(hitachi_renesas_driving_cmd, ARRAY_SIZE(hitachi_renesas_driving_cmd));
+			mddi_vivo_set_backlight(LED_FULL);
+			write_seq(hitachi_driving_seq, ARRAY_SIZE(hitachi_driving_seq));
 			write_client_reg(0x0, 0x29);
 			break;
 		default:
 			write_client_reg(0x24, 0x5300);
 			write_client_reg(0x0A, 0x22C0);
 			msleep(30);
+			mddi_vivo_set_backlight(LED_FULL);
 			break;
 	}
 
@@ -183,12 +145,14 @@ static int mddi_vivo_panel_off(struct platform_device *pdev)
 	switch (panel_type) {
 		case PANEL_ID_VIVO_HITACHI:
 			write_client_reg(0x0, 0x28);
+			mddi_vivo_set_backlight(LED_OFF);
 			write_client_reg(0x0, 0xB8);
 			write_client_reg(0x0, 0x10);
 			msleep(72);
 			break;
 		default:
 			write_client_reg(0x0, 0x5300);
+			mddi_vivo_set_backlight(LED_OFF);
 			write_client_reg(0, 0x2800);
 			write_client_reg(0, 0x1000);
 			break;
@@ -197,25 +161,32 @@ static int mddi_vivo_panel_off(struct platform_device *pdev)
 	return 0;
 }
 
-static void mddi_vivo_panel_set_backlight(struct msm_fb_data_type *mfd)
+static void mddi_vivo_set_backlight(u32 backlight_lvl)
 {
-	int ret = 0;
-	struct mddi_cmd *pcmd = hitachi_renesas_backlight_cmd;
-	
 	switch (panel_type) {
 		case PANEL_ID_VIVO_HITACHI:
-			pcmd->vals[4] = mfd->bl_level;
+			mddi_host_register_write16(0xB9, backlight_lvl, 0xff000000,
+						0x03000000, 0x08000000, 4,
+						TRUE, NULL, MDDI_HOST_PRIM);
+			break;
+		default:
+			write_client_reg(backlight_lvl, 0x5100);
+			break;
+	}
+}
+
+static void mddi_vivo_panel_set_backlight(struct msm_fb_data_type *mfd)
+{
+	switch (panel_type) {
+		case PANEL_ID_VIVO_HITACHI:
 			write_client_reg(0x04, 0xB0);
-			ret = mddi_host_register_multiwrite(pcmd->cmd, pcmd->vals, pcmd->len, TRUE, 0, MDDI_HOST_PRIM);
-			if (ret != 0)
-				printk(KERN_ERR "%s: failed multiwrite (%d)\n", __func__, ret);
+			mddi_vivo_set_backlight(mfd->bl_level);
 			write_client_reg(0x03, 0xB0);
 			break;
 		default:
-			write_client_reg(mfd->bl_level, 0x5100);
+			mddi_vivo_set_backlight(mfd->bl_level);
 			break;
 	}
-	
 }
 
 static int vivowvga_probe(struct platform_device *pdev)
