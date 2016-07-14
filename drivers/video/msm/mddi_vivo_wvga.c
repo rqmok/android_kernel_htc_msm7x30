@@ -61,19 +61,25 @@ struct mddi_regs {
 };
 
 static struct mddi_cmd hitachi_renesas_cmd[] = {
-	/* Set Page Address */
 	LCM_CMD(0x2A, 0, 0x00, 0x00, 0x01, 0xDF),
 	LCM_CMD(0x2B, 0, 0x00, 0x00, 0x03, 0x1F),
+	LCM_CMD(0x36, 0, 0x00),
+	LCM_CMD(0x3A, 0, 0x77),//set_pixel_format 0x66 for 18bit/pixel, 0x77 for 24bit/pixel
+	LCM_CMD(0xB0, 0, 0x04),
+	LCM_CMD(0x35, 0, 0x00),//TE enable
+	LCM_CMD(0xB0, 0, 0x03),
+//	LCM_CMD(0xB0, 0, 0x04),
+//	LCM_CMD(0xB0, 0, 0x03),
+//	LCM_CMD(0x29, 100,0x00),
 };
 
 static struct mddi_cmd hitachi_renesas_driving_cmd[] = {
-	/* Panel Driving Setting 2 */
+	LCM_CMD(0xB0, 0, 0x04),
 	LCM_CMD(0xC1, 0, 0x43, 0x31, 0x00, 0x00),
+	LCM_CMD(0xB0, 0, 0x03),
 };
 
-
 static struct mddi_cmd hitachi_renesas_backlight_cmd[] = {
-	/* Backlight control2 set */
 	LCM_CMD(0xB9, 0, 0x00, 0x00, 0x00, 0x00,
 			 0xff, 0x00, 0x00, 0x00,
 			 0x03, 0x00, 0x00, 0x00,
@@ -143,23 +149,10 @@ static int mddi_vivo_panel_on(struct platform_device *pdev)
 	switch (panel_type) {
 		case PANEL_ID_VIVO_HITACHI:
 			do_renesas_cmd(hitachi_renesas_cmd, ARRAY_SIZE(hitachi_renesas_cmd));
-			/* Set address mode */
-			write_client_reg(0x00, 0x36);
-			/* Set pixel format */
-			write_client_reg(0x77, 0x3A);
-			/* Manufacture Command Access Protect */
-			write_client_reg(0x04, 0xB0);
-			/* Set tear on */
-			write_client_reg(0x00, 0x35);
-			/* Manufacture Command Access Protect */
-			write_client_reg(0x03, 0xB0);
-			
 			write_client_reg(0x0, 0x11);
 			msleep(125);
 			mddi_vivo_set_backlight(LED_FULL);
-			write_client_reg(0x04, 0xB0);
-			do_renesas_cmd(hitachi_renesas_driving_cmd, 1);
-			write_client_reg(0x03, 0xB0);
+			do_renesas_cmd(hitachi_renesas_driving_cmd, ARRAY_SIZE(hitachi_renesas_driving_cmd));
 			write_client_reg(0x0, 0x29);
 			break;
 		default:
