@@ -36,8 +36,6 @@ extern int panel_type;
 static struct mddi_panel_platform_data *pdata;
 static struct msm_fb_panel_data vivowvga_panel_data;
 
-static void mddi_vivo_set_backlight(u32 backlight_lvl);
-
 #define REG_WAIT (0xffff)
 
 #define LCM_CMD(_cmd, _delay, ...)                              \
@@ -63,20 +61,17 @@ struct mddi_regs {
 static struct mddi_cmd hitachi_renesas_cmd[] = {
 	LCM_CMD(0x2A, 0, 0x00, 0x00, 0x01, 0xDF),
 	LCM_CMD(0x2B, 0, 0x00, 0x00, 0x03, 0x1F),
-	LCM_CMD(0x36, 0, 0x00),
-	LCM_CMD(0x3A, 0, 0x77),//set_pixel_format 0x66 for 18bit/pixel, 0x77 for 24bit/pixel
-	LCM_CMD(0xB0, 0, 0x04),
-	LCM_CMD(0x35, 0, 0x00),//TE enable
-	LCM_CMD(0xB0, 0, 0x03),
-//	LCM_CMD(0xB0, 0, 0x04),
-//	LCM_CMD(0xB0, 0, 0x03),
-//	LCM_CMD(0x29, 100,0x00),
+	LCM_CMD(0x36, 0, 0x00, 0x00, 0x00, 0x00),
+	LCM_CMD(0x3A, 0, 0x77, 0x77, 0x77, 0x77),//set_pixel_format 0x66 for 18bit/pixel, 0x77 for 24bit/pixel
+	LCM_CMD(0xB0, 0, 0x04, 0x00, 0x00, 0x00),
+	LCM_CMD(0x35, 0, 0x00, 0x00, 0x00, 0x00),//TE enable
+	LCM_CMD(0xB0, 0, 0x03, 0x00, 0x00, 0x00),
 };
 
 static struct mddi_cmd hitachi_renesas_driving_cmd[] = {
-	LCM_CMD(0xB0, 0, 0x04),
+	LCM_CMD(0xB0, 0, 0x04, 0x00, 0x00, 0x00),
 	LCM_CMD(0xC1, 0, 0x43, 0x31, 0x00, 0x00),
-	LCM_CMD(0xB0, 0, 0x03),
+	LCM_CMD(0xB0, 0, 0x03, 0x00, 0x00, 0x00),
 };
 
 static struct mddi_cmd hitachi_renesas_backlight_cmd[] = {
@@ -151,7 +146,6 @@ static int mddi_vivo_panel_on(struct platform_device *pdev)
 			do_renesas_cmd(hitachi_renesas_cmd, ARRAY_SIZE(hitachi_renesas_cmd));
 			write_client_reg(0x0, 0x11);
 			msleep(125);
-			mddi_vivo_set_backlight(LED_FULL);
 			do_renesas_cmd(hitachi_renesas_driving_cmd, ARRAY_SIZE(hitachi_renesas_driving_cmd));
 			write_client_reg(0x0, 0x29);
 			break;
@@ -160,7 +154,6 @@ static int mddi_vivo_panel_on(struct platform_device *pdev)
 			write_client_reg(0x24, 0x5300);
 			write_client_reg(0x0A, 0x22C0);
 			msleep(30);
-			mddi_vivo_set_backlight(LED_FULL);
 			break;
 	}
 
@@ -172,14 +165,12 @@ static int mddi_vivo_panel_off(struct platform_device *pdev)
 	switch (panel_type) {
 		case PANEL_ID_VIVO_HITACHI:
 			write_client_reg(0x0, 0x28);
-			mddi_vivo_set_backlight(LED_OFF);
 			write_client_reg(0x0, 0xB8);
 			write_client_reg(0x0, 0x10);
 			msleep(72);
 			break;
 		default:
 			write_client_reg(0x0, 0x5300);
-			mddi_vivo_set_backlight(LED_OFF);
 			write_client_reg(0, 0x2800);
 			write_client_reg(0, 0x1000);
 			break;
@@ -188,26 +179,21 @@ static int mddi_vivo_panel_off(struct platform_device *pdev)
 	return 0;
 }
 
-static void mddi_vivo_set_backlight(u32 backlight_lvl)
+static void mddi_vivo_panel_set_backlight(struct msm_fb_data_type *mfd)
 {
 	struct mddi_cmd *pcmd = hitachi_renesas_backlight_cmd;
 	
 	switch (panel_type) {
 		case PANEL_ID_VIVO_HITACHI:
-			pcmd->vals[4] = backlight_lvl;
+			pcmd->vals[4] = mfd->bl_level;
 			write_client_reg(0x04, 0xB0);
-			do_renesas_cmd(pcmd, 1);
+			do_renesas_cmd(pcmd, ARRAY_SIZE(hitachi_renesas_backlight_cmd));
 			write_client_reg(0x03, 0xB0);
 			break;
 		default:
-			write_client_reg(backlight_lvl, 0x5100);
+			write_client_reg(mfd->bl_level, 0x5100);
 			break;
 	}
-}
-
-static void mddi_vivo_panel_set_backlight(struct msm_fb_data_type *mfd)
-{
-	mddi_vivo_set_backlight(mfd->bl_level);
 }
 
 static int vivowvga_probe(struct platform_device *pdev)
