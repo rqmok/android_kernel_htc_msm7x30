@@ -33,7 +33,6 @@
 
 extern int panel_type;
 
-static struct mddi_panel_platform_data *pdata;
 static struct msm_fb_panel_data vivowvga_panel_data;
 
 #define REG_WAIT (0xffff)
@@ -198,10 +197,8 @@ static void mddi_vivo_panel_set_backlight(struct msm_fb_data_type *mfd)
 
 static int vivowvga_probe(struct platform_device *pdev)
 {
-	if (pdev->id == 0) {
-		pdata = pdev->dev.platform_data;
+	if (pdev->id == 0)
 		return 0;
-	}
 
 	msm_fb_add_device(pdev);
 
