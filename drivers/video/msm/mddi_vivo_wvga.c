@@ -196,13 +196,13 @@ static void mddi_vivo_panel_set_backlight(struct msm_fb_data_type *mfd)
 	}
 }
 
-static ssize_t mddi_nt35560_sysfs_cabc_show(struct kobject *kobj,
+static ssize_t mddi_vivo_sysfs_cabc_show(struct kobject *kobj,
 	struct kobj_attribute *attr, char *buf)
 {
 	return sprintf(buf, "%d\n", cabc_enabled);
 }
 
-static ssize_t mddi_nt35560_sysfs_cabc_store(struct kobject *kobj,
+static ssize_t mddi_vivo_sysfs_cabc_store(struct kobject *kobj,
 	struct kobj_attribute *attr, const char *buf, size_t count)
 {
 	int ret;
@@ -225,22 +225,22 @@ static ssize_t mddi_nt35560_sysfs_cabc_store(struct kobject *kobj,
 	return count;
 }
 
-static struct kobj_attribute mddi_nt35560_sysfs_cabc_attr = {
+static struct kobj_attribute mddi_vivo_sysfs_cabc_attr = {
 	.attr = {
 		.name = "cabc",
 		.mode = S_IRUGO | S_IWUSR,
 	},
-	.show = mddi_nt35560_sysfs_cabc_show,
-	.store = mddi_nt35560_sysfs_cabc_store,
+	.show = mddi_vivo_sysfs_cabc_show,
+	.store = mddi_vivo_sysfs_cabc_store,
 };
 
-static struct attribute *mddi_nt35560_sysfs_attrs[] = {
-	&mddi_nt35560_sysfs_cabc_attr.attr,
+static struct attribute *mddi_vivo_sysfs_attrs[] = {
+	&mddi_vivo_sysfs_cabc_attr.attr,
 	NULL,
 };
 
-static struct attribute_group mddi_nt35560_sysfs_attr_group = {
-	.attrs = mddi_nt35560_sysfs_attrs,
+static struct attribute_group mddi_vivo_sysfs_attr_group = {
+	.attrs = mddi_vivo_sysfs_attrs,
 };
 
 static int vivowvga_probe(struct platform_device *pdev)
@@ -273,7 +273,7 @@ static int vivowvga_probe(struct platform_device *pdev)
 	}
 
 	ret = sysfs_create_group(&mfd->fbi->dev->kobj,
-		&mddi_nt35560_sysfs_attr_group);
+		&mddi_vivo_sysfs_attr_group);
 	if (ret) {
 		pr_err("%s: sysfs group creation failed, ret=%d\n",
 			__func__, ret);
